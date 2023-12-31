@@ -28,6 +28,12 @@ namespace ReactApp1
             connection.ConnectionString += $"User ID={username};Password={password};";
         }
 
+        public static DBConnection CreateInstance()
+        {
+            var dbConnection = new DBConnection();
+            return dbConnection;
+        }
+
         //Method for opening connection to the database
         public MySqlConnection OpenConnection()
         {
