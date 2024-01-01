@@ -16,11 +16,11 @@ namespace ReactApp1
          * encrypts the private key with the derived key
          * Sends all of it to StoreRegulatorInformation, which then saves it in the database.
          */
-        public void CreateRegulator(string userName, string password, int industryID)
+        public void CreateRegulator(string userName,string hashedPassword, string password, int industryID)
         {
             //Calls HashPassword with the password and sets the hashed password to the value returned
             //this hashedpassword is saved with other regulator information
-            var hashedPassword = HashPassword(password);
+            //var hashedPassword = HashPassword(password);
 
             // Generate key pair
             var keyPair = GenerateKeyPair();
@@ -40,6 +40,7 @@ namespace ReactApp1
             ps.StoreRegulatorInformation(userName, hashedPassword, serializedPublicKey, encryptedPrivateKey, industryID);
         }
 
+        /*
         //Function for hashing password using bcrypt
         private string HashPassword(string password)
         {
@@ -52,6 +53,7 @@ namespace ReactApp1
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password, salt);
             return hashedPassword;
         }
+        */
 
         //Function for verifying password using Bcrypt
         public bool VerifyPassword(string userName, string password)
@@ -175,7 +177,7 @@ namespace ReactApp1
         }
 
         //Deserializes the byte array back into RSAParameter
-        private RSAParameters DeserializeRSAParameters(byte[] serializedParameters)
+        public static RSAParameters DeserializeRSAParameters(byte[] serializedParameters)
         {
             // Uses System.Text.Json for deserialization
             string jsonString = Encoding.UTF8.GetString(serializedParameters);

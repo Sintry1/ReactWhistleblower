@@ -39,7 +39,7 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM userTable WHERE userName = @userName) THEN CAST('TRUE' AS BIT) ELSE CAST('FALSE' AS BIT) END";
+                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE regulator_name = @userName) THEN CAST('TRUE' AS BIT) ELSE CAST('FALSE' AS BIT) END";
 
                     // Sets a mySQL parameter for the prepared statement
                     MySqlParameter userNameParam = new MySqlParameter("@userName", userName);
@@ -81,7 +81,7 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"INSERT INTO regulators (regulator_name, password, public_key, public_key, industry_id) VALUES (@userName, @hash, @publicKey, @privateKey, industry_id)";
+                        $"INSERT INTO regulators (regulator_name, password, public_key, private_key, industry_id) VALUES (@userName, @hash, @publicKey, @privateKey, industry_id)";
 
                     // Sets a mySQL parameter for the prepared statement
                     MySqlParameter userNameParam = new MySqlParameter("@userName", userName);
@@ -112,6 +112,52 @@ namespace ReactApp1
             }
         }
 
+        public byte[] GetPrivateKey(string industryName)
+        {
+            //Set credentials for the user needed
+            dbConnection.SetConnectionCredentials(Env.GetString("REGULATOR_WRITER_NAME"), Env.GetString("REGULATOR_WRITER_PASSWORD"));
+
+            //uses mySqlConnection to open the connection and throws an exception if it fails
+            using (MySqlConnection connection = dbConnection.OpenConnection())
+            {
+                try
+                {
+                    // Query to get industry_id based on industryName
+                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+
+                    // Create and prepare an SQL statement for industry_id
+                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
+                    industryIdCommand.Parameters.AddWithValue("@industry_name", industryName);
+                    industryIdCommand.Prepare();
+
+                    // Execute the query to get industry_id
+                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+
+                    // Query to get private_key based on industry_id
+                    string privateKeyQuery = "SELECT private_key FROM regulators WHERE industry_id = @industry_id";
+
+                    // Create and prepare an SQL statement for private_key
+                    MySqlCommand privateKeyCommand = new MySqlCommand(privateKeyQuery, connection);
+                    privateKeyCommand.Parameters.AddWithValue("@industry_id", industryId);
+                    privateKeyCommand.Prepare();
+
+                    // Execute the query to get private_key
+                    byte[] privateKey = (byte[])privateKeyCommand.ExecuteScalar();
+
+                    return privateKey;
+                }catch (MySqlException ex)
+                {
+                    return null;
+                }
+                //executes at the end, no matter if it returned a value before or not
+                finally
+                {
+                    //closes the connection at the VERY end
+                    dbConnection.CloseConnection();
+                }
+            }
+        }
+
         //Gets the stores has of the user's password, this method may be COMPLETELY obsolete, thanks to firebase
         public string GetHashedPassword(string userName)
         {
@@ -130,10 +176,10 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"SELECT hash FROM userTable WHERE userName = @userName";
+                        $"SELECT password FROM regulators WHERE regulator_name = @regulator_name";
 
                     // Sets a mySQL parameter for the prepared statement
-                    MySqlParameter userNameParam = new MySqlParameter("@userName", userName);
+                    MySqlParameter userNameParam = new MySqlParameter("@regulator_name", userName);
 
                     // Adds the parameter to the command
                     command.Parameters.Add(userNameParam);
@@ -159,95 +205,195 @@ namespace ReactApp1
             }
         }
 
-        //Stores message, may need to be modified if we need userID or other things stored with the message
-        public bool StoreMessage(string industryID, string msg, string email)
+        /*
+         * Takes an object of type Report, made using the Report class
+         * Tries to takes parameters from the object and sets them as paramaters for the prepared statement
+         * Returns true to the function that called it IF it succeds
+         * it returns false if it fails/catches an error
+         */
+        public bool StoreReport(Report report)
         {
-            //Set credentials for the user needed
+            // Set credentials for the user needed
             dbConnection.SetConnectionCredentials(Env.GetString("REPORTS_WRITER_NAME"), Env.GetString("REPORTS_WRITER_PASSWORD"));
 
-            //uses mySqlConnection to open the connection and throws an exception if it fails
+            // Use mySqlConnection to open the connection and throw an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
             {
                 try
                 {
-                    //creates an instance of MySqlCommand, a method in the mysql library
+                    // Query to get industry_id based on industryName
+                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+
+                    // Create and prepare an SQL statement for industry_id
+                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
+                    industryIdCommand.Parameters.AddWithValue("@industry_name", report.IndustryName);
+                    industryIdCommand.Prepare();
+
+                    // Execute the query to get industry_id
+                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+
+                    // Create an instance of MySqlCommand
                     MySqlCommand command = new MySqlCommand(null, connection);
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"INSERT INTO reports (industry_id,description,email) VALUES (@industry_id,@msg, @email)";
+                        $"INSERT INTO reports (industry_id, company_name, description, email) VALUES (@industry_id, @company_name, @Description, @email)";
 
                     // Sets mySQL parameters for the prepared statement
-                    MySqlParameter industryIDParam = new MySqlParameter("@industry_id", industryID);
-                    MySqlParameter msgParam = new MySqlParameter("@msg", msg);
-                    MySqlParameter emailParam = new MySqlParameter("@email", email);
+                    MySqlParameter industryIDParam = new MySqlParameter("@industry_id", industryId);
+                    MySqlParameter companyNameParam = new MySqlParameter("@company_name", report.CompanyName);
+                    MySqlParameter msgParam = new MySqlParameter("@Description", report.Description);
+
+                    // Check if email is null, and set the parameter accordingly
+                    MySqlParameter emailParam;
+                    if (string.IsNullOrEmpty(report.Email))
+                    {
+                        emailParam = new MySqlParameter("@email", DBNull.Value);
+                    }
+                    else
+                    {
+                        emailParam = new MySqlParameter("@email", report.Email);
+                    }
 
                     // Adds the parameters to the command
                     command.Parameters.Add(industryIDParam);
+                    command.Parameters.Add(companyNameParam);
                     command.Parameters.Add(msgParam);
                     command.Parameters.Add(emailParam);
 
                     // Call Prepare after setting the Commandtext and Parameters.
                     command.Prepare();
 
-                    // Execute the query and cast the result to a boolean
-                    command.ExecuteNonQuery();
+                    // Execute the query
+                    object result = command.ExecuteScalar();
 
-                    //return true if no exceptions are thrown
+                    // Return true if no exceptions are thrown
                     return true;
                 }
                 catch (MySqlException ex)
                 {
-                    //return false if exception is thrown, may want to implement secure logging if we can to store the error message
+                    // Handle the exception (e.g., log it) and return false
+                    // You may want to implement secure logging to store the error message
                     return false;
                 }
-                //executes at the end, no matter if it returned a value before or not
                 finally
                 {
-                    //closes the connection at the VERY end
+                    // Close the connection at the end
                     dbConnection.CloseConnection();
                 }
             }
         }
 
         /*
-        public List<string> GetAllPublicKeys()
+         * Fetches all reports that have the same industry ID as passed to the function
+         * All information is turned into a "Report" object
+         * the function then returns a list of all Reports
+         */
+        public List<Report> GetAllReportsByIndustryName(string industryName)
         {
-            //Empty list to fill with keys
-            List<string> keyEntries = new List<string>();
-            string columnName = "PublicKeys";
+            List<Report> reports = new List<Report>();
 
-            //uses mySqlConnection to open the connection and throws an exception if it fails
+            // Set credentials for the user needed
+            dbConnection.SetConnectionCredentials(Env.GetString("REPORTS_READER_NAME"), Env.GetString("REPORTS_READER_PASSWORD"));
+
+            // Use mySqlConnection to open the connection and throw an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
             {
                 try
                 {
-                    //creates an instance of MySqlCommand, a method in the mysql library
+                    // Create an instance of MySqlCommand
                     MySqlCommand command = new MySqlCommand(null, connection);
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"SELECT PublicKeys FROM KeyList";
+                        "SELECT * FROM reports WHERE industry_name = @industry_name";
 
-                    // Call Prepare after setting the Commandtext and Parameters.
-                    command.Prepare();
+                    // Set mySQL parameters for the prepared statement
+                    MySqlParameter industryIDParam = new MySqlParameter("@industry_name", industryName);
+                    command.Parameters.Add(industryIDParam);
 
                     // Execute the query
                     using (MySqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            // Assuming the column type is string, change accordingly based on the actual type
-                            string entry = reader.GetString(columnName);
-                            keyEntries.Add(entry);
+                            // Read data from the database and create a Report object
+                            int reportID = reader.GetInt32("report_id");
+                            string companyName = reader.GetString("company_name");
+                            string description = reader.GetString("description");
+                            string email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email");
+
+                            Report report = new Report(reportID, industryName, companyName, description, email);
+                            reports.Add(report);
                         }
                     }
-                    return keyEntries;
+
+                    // Return the list of reports
+                    return reports;
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle the exception (e.g., log it) and return an empty list or null
+                    // You may want to implement secure logging to store the error message
+                    return new List<Report>();
+                }
+                finally
+                {
+                    // Close the connection at the end
+                    dbConnection.CloseConnection();
+                }
+            }
+        }
+
+
+        public byte[] GetPublicKey(string industryName)
+        {
+            //Set credentials for the user needed
+            dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
+
+            //uses mySqlConnection to open the connection and throws an exception if it fails
+            using (MySqlConnection connection = dbConnection.OpenConnection())
+            {
+                try
+                {
+                    // Query to get industry_id based on industryName
+                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+
+                    // Create and prepare an SQL statement for industry_id
+                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
+                    industryIdCommand.Parameters.AddWithValue("@industry_name", industryName);
+                    industryIdCommand.Prepare();
+
+                    // Execute the query to get industry_id
+                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+
+                    //creates an instance of MySqlCommand, a method in the mysql library
+                    MySqlCommand command = new MySqlCommand(null, connection);
+
+                    // Create and prepare an SQL statement.
+                    command.CommandText =
+                        $"SELECT public_key FROM regulators where industry_id = @industry_id";
+
+                    // Sets mySQL parameters for the prepared statement
+                    MySqlParameter industryIDParam = new MySqlParameter("@industry_id", industryId);
+
+                    // Adds the parameters to the command
+                    command.Parameters.Add(industryIDParam);
+
+                    // Call Prepare after setting the Commandtext and Parameters.
+                    command.Prepare();
+
+                    // Execute the query and cast the result to a byte array
+                    object result = command.ExecuteScalar();
+
+                    // Return the byte array
+                    return result as byte[];
+
                 }
                 catch (MySqlException ex)
                 {
                     //return false if exception is thrown, may want to implement secure logging if we can to store the error message
-                    return keyEntries;
+                    return null;
                 }
                 //executes at the end, no matter if it returned a value before or not
                 finally
@@ -257,6 +403,6 @@ namespace ReactApp1
                 }
             }
         
-        }*/
+        }
     }
 }
