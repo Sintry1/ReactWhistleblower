@@ -8,9 +8,14 @@ namespace ReactApp1
         //creates instance of PreparedStatements for calling prepared statements from the PreparedStatements class
         private PreparedStatements ps = PreparedStatements.CreateInstance();
 
-        //Encrypts password using Bcrypt and posts the hashedpassword to "StoreHashAndUserName, which then saves the hashed password
-        //and username to the database, this may need to be changed if we don't want to store usernames in plain texta
-        //as it could leak who the reporter is. Maybe hash usernames too?
+        /*Takes username, password and industry ID
+         * Encrypts password using Bcrypt
+         * calls a function that generates a public/private key pair for the regulator
+         * serializes them into bytes, so they can be stored.
+         * calls a function that derives an encryption key
+         * encrypts the private key with the derived key
+         * Sends all of it to StoreRegulatorInformation, which then saves it in the database.
+         */
         public void CreateRegulator(string userName, string password, int industryID)
         {
             //Calls HashPassword with the password and sets the hashed password to the value returned
@@ -19,18 +24,23 @@ namespace ReactApp1
 
             // Generate key pair
             var keyPair = GenerateKeyPair();
-            byte[] publicKey = keyPair.Item1;
-            byte[] privateKey = keyPair.Item2;
+            RSAParameters publicKey = keyPair.Item1;
+            RSAParameters privateKey = keyPair.Item2;
+
+            // Serialize RSA parameters
+            byte[] serializedPublicKey = SerializeRSAParameters(publicKey);
+            byte[] serializedPrivateKey = SerializeRSAParameters(privateKey);
 
             //gets a byte array as encryption key, using the called function
             byte[] encryptionkey = KeyDeriverForEncryptionAndDecryptionOfPrivateKey(userName, password);
 
-            byte[] encryptedPrivateKey = EncryptKey(privateKey, encryptionkey);
+            byte[] encryptedPrivateKey = EncryptKey(serializedPrivateKey, encryptionkey);
 
             //stores username and password in DB, this can be removed, if we are using other services for login
-            ps.StoreRegulatorInformation(userName, hashedPassword, publicKey, encryptedPrivateKey, industryID);
+            ps.StoreRegulatorInformation(userName, hashedPassword, serializedPublicKey, encryptedPrivateKey, industryID);
         }
 
+        //Function for hashing password using bcrypt
         private string HashPassword(string password)
         {
             string salt;
@@ -61,29 +71,6 @@ namespace ReactApp1
         }
 
         //Function for deriving a key from username and password
-        private string DecriveKey(string userName, string password)
-        {
-            //passes username and password to verifyPassword and enters the if statement ONLY if VerifyPassword returns true
-            if (VerifyPassword(userName, password))
-            {
-
-                //Sets a combinedSecret of password and username
-                string combinedSecret = password + userName;
-
-                //Generates a Salt using the password
-                byte[] deterministicSalt = Encoding.UTF8.GetBytes(password);
-
-                // Derive a consistent user-specific key from combinedSecret using Rfc2898DeriveBytes
-                using (var pbkdf2 = new Rfc2898DeriveBytes(combinedSecret, deterministicSalt, 600000, HashAlgorithmName.SHA256))
-                {
-                    byte[] keyBytes = pbkdf2.GetBytes(32); // 256 bits key
-                    string key = Convert.ToBase64String(keyBytes);
-                    return key;
-                }
-            }
-            return null;
-        }
-
         private byte[] KeyDeriverForEncryptionAndDecryptionOfPrivateKey(string userName, string password)
         {
             // Sets a combinedSecret of password and username
@@ -100,48 +87,64 @@ namespace ReactApp1
         }
 
         // Encrypt a key using a different key
+        // Encrypts a key using AES algorithm and a specified encryption key
         public static byte[] EncryptKey(byte[] keyToEncrypt, byte[] encryptionKey)
         {
+            // Creates an instance of the AES algorithm
             using (Aes aesAlg = Aes.Create())
             {
+                // Sets the encryption key for the AES algorithm
                 aesAlg.Key = encryptionKey;
 
+                // Creates a memory stream to store the encrypted data
                 using (MemoryStream msEncrypt = new MemoryStream())
                 {
+                    // Creates an encryptor using the AES algorithm
                     using (ICryptoTransform encryptor = aesAlg.CreateEncryptor())
                     {
+                        // Creates a CryptoStream to perform the encryption
                         using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
                         {
+                            // Creates a StreamWriter to write the key to be encrypted to the stream
                             using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
                             {
-                                // Write the key to be encrypted to the stream
+                                // Writes the key to be encrypted to the stream
                                 swEncrypt.Write(Encoding.UTF8.GetString(keyToEncrypt));
                             }
                         }
                     }
 
+                    // Converts the encrypted data in the memory stream to a byte array and returns it
                     return msEncrypt.ToArray();
                 }
             }
         }
 
-        // Decrypt password using AES and the provided key and IV
+        // Decrypts a key using AES algorithm and a specified decryption key
         public static byte[] DecryptKey(byte[] encryptedKey, byte[] decryptionKey)
         {
+            // Creates an instance of the AES algorithm
             using (Aes aesAlg = Aes.Create())
             {
+                // Sets the decryption key for the AES algorithm
                 aesAlg.Key = decryptionKey;
 
+                // Creates a memory stream to store the encrypted key
                 using (MemoryStream msDecrypt = new MemoryStream(encryptedKey))
                 {
+                    // Creates a decryptor using the AES algorithm
                     using (ICryptoTransform decryptor = aesAlg.CreateDecryptor())
                     {
+                        // Creates a CryptoStream to perform the decryption
                         using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                         {
+                            // Creates a StreamReader to read the decrypted key from the stream
                             using (StreamReader srDecrypt = new StreamReader(csDecrypt))
                             {
-                                // Read the decrypted key from the stream
+                                // Reads the decrypted key from the stream
                                 string decryptedKey = srDecrypt.ReadToEnd();
+
+                                // Converts the decrypted key to a byte array and returns it
                                 return Encoding.UTF8.GetBytes(decryptedKey);
                             }
                         }
@@ -150,17 +153,60 @@ namespace ReactApp1
             }
         }
 
-        public static Tuple<byte[], byte[]> GenerateKeyPair()
+        //Generates a key pair for the regulator and returns them as byte arrays
+        public static Tuple<RSAParameters, RSAParameters> GenerateKeyPair()
         {
-            using (ECDiffieHellmanCng dh = new ECDiffieHellmanCng())
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {
                 // Generate public-private key pair
-                byte[] publicKey = dh.PublicKey.ToByteArray();
-
-                // Export private key using key exchange format (not recommended for security reasons)
-                byte[] privateKey = dh.Key.Export(CngKeyBlobFormat.EccPrivateBlob);
+                RSAParameters publicKey = rsa.ExportParameters(false);
+                RSAParameters privateKey = rsa.ExportParameters(true);
 
                 return Tuple.Create(publicKey, privateKey);
+            }
+        }
+
+        //Serializes the RSA parameters into a byte array for storage
+        private byte[] SerializeRSAParameters(RSAParameters parameters)
+        {
+            // Uses System.Text.Json for serialization
+            string jsonString = System.Text.Json.JsonSerializer.Serialize(parameters);
+            return Encoding.UTF8.GetBytes(jsonString);
+        }
+
+        //Deserializes the byte array back into RSAParameter
+        private RSAParameters DeserializeRSAParameters(byte[] serializedParameters)
+        {
+            // Uses System.Text.Json for deserialization
+            string jsonString = Encoding.UTF8.GetString(serializedParameters);
+            return System.Text.Json.JsonSerializer.Deserialize<RSAParameters>(jsonString);
+        }
+
+        //Encrypts the msg using the publicKey of the regulator with RSA
+        public static string Encrypt(string msg, RSAParameters publicKey)
+        {
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+            {
+                rsa.ImportParameters(publicKey);
+
+                byte[] plaintextBytes = Encoding.UTF8.GetBytes(msg);
+                byte[] encryptedData = rsa.Encrypt(plaintextBytes, true);
+
+                return Convert.ToBase64String(encryptedData);
+            }
+        }
+
+        //Decrypts the encrypted message using the private key with RSA
+        public static string Decrypt(string encryptedText, RSAParameters privateKey)
+        {
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+            {
+                rsa.ImportParameters(privateKey);
+
+                byte[] encryptedData = Convert.FromBase64String(encryptedText);
+                byte[] decryptedBytes = rsa.Decrypt(encryptedData, true);
+
+                return Encoding.UTF8.GetString(decryptedBytes);
             }
         }
     }
