@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Information() {
   return (
     <div>
@@ -21,8 +23,8 @@ export default function Information() {
         </a>
       </p>
       <p></p>
-      <button>Submit a report</button>
-      <button>Regulator Login</button>
+          <button>Submit a report</button>
+          <button><Link to="/login">Regulator Login</Link></button>
     </div>
   );
 }
