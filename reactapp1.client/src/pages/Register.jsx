@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from "react";
 
 export default function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [repeatPassword, setRepeatPassword] = useState('');
-  const [industry, setIndustry] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [industry, setIndustry] = useState("");
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -23,13 +23,18 @@ export default function Register() {
   };
 
   const handleRegister = () => {
-    if (email === '' || password === '' || repeatPassword === '' || industry === '') {
-      alert('Please fill in all fields');
+    if (
+      email === "" ||
+      password === "" ||
+      repeatPassword === "" ||
+      industry === ""
+    ) {
+      alert("Please fill in all fields");
       return;
     }
 
     if (password !== repeatPassword) {
-      alert('Passwords do not match');
+      alert("Passwords do not match");
       return;
     }
 
@@ -37,17 +42,32 @@ export default function Register() {
     // ...
 
     // Reset form fields
-    setEmail('');
-    setPassword('');
-    setRepeatPassword('');
-    setIndustry('');
+    setEmail("");
+    setPassword("");
+    setRepeatPassword("");
+    setIndustry("");
   };
 
   return (
     <div>
-      <input type="email" placeholder="Email" value={email} onChange={handleEmailChange} />
-      <input type="password" placeholder="Password" value={password} onChange={handlePasswordChange} />
-      <input type="password" placeholder="Repeat Password" value={repeatPassword} onChange={handleRepeatPasswordChange} />
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={handleEmailChange}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={handlePasswordChange}
+      />
+      <input
+        type="password"
+        placeholder="Repeat Password"
+        value={repeatPassword}
+        onChange={handleRepeatPasswordChange}
+      />
       <select value={industry} onChange={handleIndustryChange}>
         <option value="">Select Industry</option>
         <option value="Information Technology">Information Technology</option>
@@ -61,4 +81,4 @@ export default function Register() {
       <button onClick={handleRegister}>Register</button>
     </div>
   );
-};
+}

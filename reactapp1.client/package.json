@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "crypto-js": "^4.2.0",
     "npm": "^10.2.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.21.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

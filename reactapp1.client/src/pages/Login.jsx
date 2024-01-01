@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import CryptoJS from "crypto-js";
 
-export default function Login () {
+export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 

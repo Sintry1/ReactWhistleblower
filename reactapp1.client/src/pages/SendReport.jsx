@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export default function SendReport() {
   const [reports, setReports] = useState([]);
@@ -7,11 +7,11 @@ export default function SendReport() {
     // Fetch reports from the database
     const fetchReports = async () => {
       try {
-        const response = await fetch('/api/reports');
+        const response = await fetch("/api/reports");
         const data = await response.json();
         setReports(data);
       } catch (error) {
-        console.error('Error fetching reports:', error);
+        console.error("Error fetching reports:", error);
       }
     };
 
@@ -34,7 +34,7 @@ export default function SendReport() {
           {reports.map((report) => (
             <tr key={report.id}>
               <td>{report.dateSubmitted}</td>
-              <td>{report.resolved ? 'Yes' : 'No'}</td>
+              <td>{report.resolved ? "Yes" : "No"}</td>
               <td>{report.preview}</td>
               <td>{report.industry}</td>
             </tr>
@@ -43,5 +43,4 @@ export default function SendReport() {
       </table>
     </div>
   );
-};
-
+}
