@@ -16,7 +16,7 @@ namespace ReactApp1
          * encrypts the private key with the derived key
          * Sends all of it to StoreRegulatorInformation, which then saves it in the database.
          */
-        public void CreateRegulator(string userName,string hashedPassword, int industryID)
+        public void CreateRegulator(string userName,string hashedPassword, int industryName)
         {
             //Calls HashPassword with the password and sets the hashed password to the value returned
             //this hashedpassword is saved with other regulator information
@@ -37,7 +37,7 @@ namespace ReactApp1
             byte[] encryptedPrivateKey = EncryptKey(serializedPrivateKey, encryptionkey);
 
             //stores username and password in DB, this can be removed, if we are using other services for login
-            ps.StoreRegulatorInformation(userName, hashedPassword, serializedPublicKey, encryptedPrivateKey, industryID);
+            ps.StoreRegulatorInformation(userName, hashedPassword, serializedPublicKey, encryptedPrivateKey, industryName);
         }
 
         /*
