@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import "./SendReport.css";
+import axios from "axios";
 
 export default function SendReport() {
+
+  const api = "http://localhost:5090/";
   useEffect(() => {}, []);
 
   const [industry, setIndustry] = useState("");
@@ -104,6 +107,7 @@ export default function SendReport() {
     let ecnryptedCompany = await encryptValue(companyName, encryptionKy);
 
     // Send report using Axios
+    axios.post(`${api}api/controller/sendReport`, )
   };
 
   return (
