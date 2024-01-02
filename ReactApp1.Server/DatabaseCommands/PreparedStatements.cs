@@ -66,7 +66,7 @@ namespace ReactApp1
         }
 
         //Stores username and the hashedPassword, this method may be COMPLETELY obsolete, thanks to firebase
-        public void StoreRegulatorInformation(string userName, string hash, byte[] publicKey, byte[] encryptedPrivateKey, int industryName)
+        public void StoreRegulatorInformation(string userName, string hash, byte[] publicKey, byte[] encryptedPrivateKey, string industryName)
         {
             //Set credentials for the user needed
             dbConnection.SetConnectionCredentials(Env.GetString("REGULATOR_WRITER_NAME"), Env.GetString("REGULATOR_WRITER_PASSWORD"));

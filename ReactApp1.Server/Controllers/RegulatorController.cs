@@ -22,7 +22,7 @@ namespace ReactApp1
                 string userName = regulatorRequest.UserName;
                 string hashedPassword = regulatorRequest.HashedPassword;
                 string password = regulatorRequest.Password;
-                int industryName = regulatorRequest.IndustryName;
+                string industryName = regulatorRequest.IndustryName;
 
                 security.CreateRegulator(userName, hashedPassword, industryName);
 
@@ -73,6 +73,6 @@ namespace ReactApp1
         public string UserName { get; set; }
         public string HashedPassword { get; set; }
         public string Password { get; set; }
-        public int IndustryName { get; set; }
+        public string IndustryName { get; set; }
     }
 }
