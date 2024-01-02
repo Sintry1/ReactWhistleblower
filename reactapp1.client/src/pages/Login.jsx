@@ -1,5 +1,6 @@
 import CryptoJS from "crypto-js";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -21,7 +22,6 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const encryptedUsername = encryptValue(username);
     const encryptedPassword = encryptValue(password);
     // Perform login logic here with encrypted values
   };
@@ -48,7 +48,7 @@ export default function Login() {
             onChange={handlePasswordChange}
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit"><Link to="/reports">Login</Link></button>
       </form>
     </div>
   );

@@ -1,46 +1,144 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import "./SendReport.css";
 
 export default function SendReport() {
-  const [reports, setReports] = useState([]);
-
   useEffect(() => {
-    // Fetch reports from the database
-    const fetchReports = async () => {
-      try {
-        const response = await fetch("/api/reports");
-        const data = await response.json();
-        setReports(data);
-      } catch (error) {
-        console.error("Error fetching reports:", error);
-      }
-    };
-
-    fetchReports();
+    console.log("IT Secret key", import.meta.env.VITE_TEST_SECRET);
   }, []);
 
+  const deriveKey = async (industry) => {
+    let key;
+    switch (industry) {
+      case "Information Technology":
+        key = import.meta.env.VITE_IT_SECRET_KEY;
+        break;
+      case "Financial Services":
+        key = import.meta.env.VITE_FINSERV_SECRET_KEY;
+        break;
+      case "Healthcare":
+        key = import.meta.env.VITE_HEALTHCARE_SECRET_KEY;
+        break;
+      case "Law Enforcement":
+        key = import.meta.env.VITE_LAWENF_SECRET_KEY;
+        break;
+      case "Leisure":
+        key = import.meta.env.VITE_LEISURE_SECRET_KEY;
+        break;
+      case "Hospitality":
+        key = import.meta.env.VITE_HOSPITALITY_SECRET_KEY;
+        break;
+      default:
+        return key;
+    }
+
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+
+    const encodedKey = new TextEncoder().encode(key);
+
+    const keyMat = await crypto.subtle.importKey(
+      "raw",
+      encodedKey,
+      { name: "PBKDF2" },
+      false,
+      ["deriveBits", "deriveKey"]
+    );
+
+    const derivedKey = await crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: salt,
+        iterations: 100000,
+        hash: { name: "SHA-256" },
+      },
+      keyMat,
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt"]
+    );
+
+    return derivedKey;
+  };
+
+  const encryptValue = async (input, encryptionKey) => {
+    const keyMaterial = await crypto.subtle.exportKey("raw", encryptionKey);
+
+    const key = await crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: new TextEncoder().encode(localStorage.getItem("Salt")),
+        iterations: 100000,
+        hash: { name: "SHA-256" },
+      },
+      await crypto.subtle.importKey(
+        "raw",
+        keyMaterial,
+        { name: "PBKDF2" },
+        false,
+        ["deriveKey"]
+      ),
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt"]
+    );
+
+    const iv = crypto.getRandomValues(new Uint8Array(16));
+    const cipher = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      key,
+      new TextEncoder().encode(input)
+    );
+
+    return {
+      iv: iv,
+      input: new Uint8Array(cipher),
+    };
+  };
+
+
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+  };
+
   return (
-    <div>
-      <h1>Report Previews</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Date Submitted</th>
-            <th>Resolved</th>
-            <th>Preview</th>
-            <th>Industry</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reports.map((report) => (
-            <tr key={report.id}>
-              <td>{report.dateSubmitted}</td>
-              <td>{report.resolved ? "Yes" : "No"}</td>
-              <td>{report.preview}</td>
-              <td>{report.industry}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="container">
+      <h2>Submit a Report</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="industry">Industry</label>
+          <select id="industry" className="dropdown">
+            <option value="Information Technology">
+              Information Technology
+            </option>
+            <option value="Financial Services">Financial Services</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Law Enforcement">Law Enforcement</option>
+            <option value="Leisure">Leisure</option>
+            <option value="Hospitality">Hospitality</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="industry">Company Name</label>
+          <input className="input" type="text" placeholder="Company Name" />
+        </div>
+        <div>
+          <label htmlFor="industry">Report Details</label>
+          <textarea
+            className="description"
+            placeholder="Description"
+          ></textarea>
+        </div>
+        <div>
+          <label htmlFor="industry">Email (Optional)</label>
+          <input
+            className="input"
+            type="email"
+            placeholder="Email (optional)"
+          />
+        </div>
+        <button type="submit">Send</button>
+      </form>
     </div>
   );
 }

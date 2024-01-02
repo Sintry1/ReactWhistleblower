@@ -1,9 +1,9 @@
-using System.Security.Cryptography;
+// using System.Security.Cryptography;
 
-namespace ReactApp1
-{
-    public class userFunctionality
-    {
+// namespace ReactApp1
+// {
+//     public class userFunctionality
+//     {
 
         private PreparedStatements ps = PreparedStatements.CreateInstance();
 

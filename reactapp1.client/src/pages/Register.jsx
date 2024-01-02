@@ -1,10 +1,18 @@
 import { useState } from "react";
+import bcrypt from "bcryptjs";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [industry, setIndustry] = useState("");
+
+  const salt = bcrypt.genSaltSync(10);
+
+  const hashPassword = (password) => {
+    const hashedPassword = bcrypt.hashSync(password, salt);
+    return hashedPassword;
+  };
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -20,6 +28,23 @@ export default function Register() {
 
   const handleIndustryChange = (e) => {
     setIndustry(e.target.value);
+  };
+
+  const registerUser = async (email, password, industry) => {
+    const hashedPassword = hashPassword(password);
+    const response = await fetch("/api/register", {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        password: hashedPassword,
+        industry,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await response.json();
+    return data;
   };
 
   const handleRegister = () => {
@@ -38,8 +63,7 @@ export default function Register() {
       return;
     }
 
-    // Perform registration logic here
-    // ...
+    registerUser(email, password, industry);
 
     // Reset form fields
     setEmail("");
@@ -50,35 +74,37 @@ export default function Register() {
 
   return (
     <div>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={handleEmailChange}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={handlePasswordChange}
-      />
-      <input
-        type="password"
-        placeholder="Repeat Password"
-        value={repeatPassword}
-        onChange={handleRepeatPasswordChange}
-      />
-      <select value={industry} onChange={handleIndustryChange}>
-        <option value="">Select Industry</option>
-        <option value="Information Technology">Information Technology</option>
-        <option value="Financial Services">Financial Services</option>
-        <option value="Healthcare">Healthcare</option>
-        <option value="Law Enforcement">Law Enforcement</option>
-        <option value="Leisure">Leisure</option>
-        <option value="Hospitality">Hospitality</option>
-        {/* Add more options as needed */}
-      </select>
-      <button onClick={handleRegister}>Register</button>
+      <form onSubmit={handleRegister()}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={handleEmailChange}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={handlePasswordChange}
+        />
+        <input
+          type="password"
+          placeholder="Repeat Password"
+          value={repeatPassword}
+          onChange={handleRepeatPasswordChange}
+        />
+        <select value={industry} onChange={handleIndustryChange}>
+          <option value="">Select Industry</option>
+          <option value="Information Technology">Information Technology</option>
+          <option value="Financial Services">Financial Services</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Law Enforcement">Law Enforcement</option>
+          <option value="Leisure">Leisure</option>
+          <option value="Hospitality">Hospitality</option>
+          {/* Add more options as needed */}
+        </select>
+        <button type="submit">Register</button>
+      </form>
     </div>
   );
 }

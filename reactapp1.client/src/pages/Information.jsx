@@ -22,9 +22,12 @@ export default function Information() {
           https://www.gov.uk/whistleblowing
         </a>
       </p>
-      <p></p>
-          <button>Submit a report</button>
-          <button><Link to="/login">Regulator Login</Link></button>
+      <button>
+        <Link to="/sendreport">Submit a report</Link>
+      </button>
+      <button>
+        <Link to="/login">Regulator Login</Link>
+      </button>
     </div>
   );
 }
