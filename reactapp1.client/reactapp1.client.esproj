@@ -1,6 +1,11 @@
-IT_SECRET_KEY = aR7b9G3pT2qL8iXsU;
-FINSERV_SECRET_KEY = 4YvF6hKpL2sT9jZqBxW7
-HEALTHCARE_SECRET_KEY = 3sP8mH5tR6yL2oX9wF1aE7
-LAWENF_SECRET_KEY = 9cJ6rL2xP4oY8hA7vG3sM1nF5
-LEISURE_SECRET_KEY = 6aS8fR1gT2hQ9bL4yZ7xP3wK5
-HOSPITALITY_SECRET_KEY = 2dA7iN4oM8jF1yT6pR9qL3sW5
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/0.5.128-alpha">
+  <PropertyGroup>
+    <StartupCommand>npm run dev</StartupCommand>
+    <JavaScriptTestRoot>src\</JavaScriptTestRoot>
+    <JavaScriptTestFramework>Jest</JavaScriptTestFramework>
+    <!-- Allows the build (or compile) script located on package.json to run on Build -->
+    <ShouldRunBuildScript>false</ShouldRunBuildScript>
+    <!-- Folder where production build objects will be placed -->
+    <PublishAssetsDirectory>$(MSBuildProjectDirectory)\dist</PublishAssetsDirectory>
+  </PropertyGroup>
+</Project>
