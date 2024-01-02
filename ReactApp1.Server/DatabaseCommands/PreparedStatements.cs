@@ -66,7 +66,7 @@ namespace ReactApp1
         }
 
         //Stores username and the hashedPassword, this method may be COMPLETELY obsolete, thanks to firebase
-        public void StoreRegulatorInformation(string userName, string hash, byte[] publicKey, byte[] encryptedPrivateKey, int industryID)
+        public void StoreRegulatorInformation(string userName, string hash, byte[] publicKey, byte[] encryptedPrivateKey, string industryName)
         {
             //Set credentials for the user needed
             dbConnection.SetConnectionCredentials(Env.GetString("REGULATOR_WRITER_NAME"), Env.GetString("REGULATOR_WRITER_PASSWORD"));
@@ -76,6 +76,18 @@ namespace ReactApp1
             {
                 try
                 {
+
+                    // Query to get industry_id based on industryName
+                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+
+                    // Create and prepare an SQL statement for industry_id
+                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
+                    industryIdCommand.Parameters.AddWithValue("@industry_name", industryName);
+                    industryIdCommand.Prepare();
+
+                    // Execute the query to get industry_id
+                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+
                     //creates an instance of MySqlCommand, a method in the mysql library
                     MySqlCommand command = new MySqlCommand(null, connection);
 
@@ -88,7 +100,7 @@ namespace ReactApp1
                     MySqlParameter hashParam = new MySqlParameter("@hash", hash);
                     MySqlParameter publicKeyParam = new MySqlParameter("@publicKey", publicKey);
                     MySqlParameter privateKeyParam = new MySqlParameter("@privateKey", encryptedPrivateKey);
-                    MySqlParameter industryIDParam = new MySqlParameter("@industry_id", industryID);
+                    MySqlParameter industryIDParam = new MySqlParameter("@industry_id", industryId);
 
                     // Adds the parameter to the command
                     command.Parameters.Add(userNameParam);

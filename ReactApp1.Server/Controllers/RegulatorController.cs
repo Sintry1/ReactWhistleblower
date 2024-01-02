@@ -22,9 +22,9 @@ namespace ReactApp1
                 string userName = regulatorRequest.UserName;
                 string hashedPassword = regulatorRequest.HashedPassword;
                 string password = regulatorRequest.Password;
-                int industryID = regulatorRequest.IndustryID;
+                string industryName = regulatorRequest.IndustryName;
 
-                security.CreateRegulator(userName, hashedPassword, industryID);
+                security.CreateRegulator(userName, hashedPassword, industryName);
 
                 return Ok(new { Success = true, Message = "Regulator created successfully." });
             }
@@ -73,6 +73,6 @@ namespace ReactApp1
         public string UserName { get; set; }
         public string HashedPassword { get; set; }
         public string Password { get; set; }
-        public int IndustryID { get; set; }
+        public string IndustryName { get; set; }
     }
 }
