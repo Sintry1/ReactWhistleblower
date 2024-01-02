@@ -30,9 +30,9 @@ export default function Register() {
     setIndustry(e.target.value);
   };
 
-  const registerUser = async (email, password, industry) => {
+  const registerRegulator = async (email, password, industry) => {
     const hashedPassword = hashPassword(password);
-    const response = await fetch("/api/register", {
+    const response = await fetch("/api/createRegulator", {
       method: "POST",
       body: JSON.stringify({
         email,
@@ -63,7 +63,7 @@ export default function Register() {
       return;
     }
 
-    registerUser(email, password, industry);
+    registerRegulator(email, password, industry);
 
     // Reset form fields
     setEmail("");

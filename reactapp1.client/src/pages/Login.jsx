@@ -1,10 +1,22 @@
 import CryptoJS from "crypto-js";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import bcrypt from "bcryptjs";
+import axios from "axios"; 
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  const api = "http://localhost:5090/";
+
+  const salt = bcrypt.genSaltSync(10);
+
+  const checkPassword = async (name, password) => {
+    const hashedPassword = bcrypt.hashSync(password, salt);
+    const storedPassword = axios.get(`${api}regulators`, {});
+    return bcrypt.compareSync(hashedPassword, storedPassword);
+  };
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -14,11 +26,11 @@ export default function Login() {
     setPassword(e.target.value);
   };
 
-  const encryptValue = (value) => {
-    const secretKey = "your-secret-key"; // Replace with your secret key
-    const encryptedValue = CryptoJS.AES.encrypt(value, secretKey).toString();
-    return encryptedValue;
-  };
+  // const encryptValue = (value) => {
+  //   const secretKey = "your-secret-key"; // Replace with your secret key
+  //   const encryptedValue = CryptoJS.AES.encrypt(value, secretKey).toString();
+  //   return encryptedValue;
+  // };
 
   const handleSubmit = (e) => {
     e.preventDefault();
