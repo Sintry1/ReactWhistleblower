@@ -2,14 +2,14 @@ using System.Security.Cryptography;
 
 namespace ReactApp1
 {
-    public class userFunctionality
+    public class UserFunctionality
     {
 
         private PreparedStatements ps = PreparedStatements.CreateInstance();
-
+        private Security security = new Security();
         public bool SendReport(string industryName,string companyName, string Description, string email)
         {
-            //Add if statement around this to verify the user exists in the database
+            
             try
             {
                 //Calls the GetPublicKey prepared statement and gets the byte array
@@ -19,9 +19,9 @@ namespace ReactApp1
                 RSAParameters publicKey = Security.DeserializeRSAParameters(serializedpublicKey);
                 
                 //encrypts each field with the RSAParamater
-                string encryptedCompanyName = Security.Encrypt(companyName, publicKey);
-                string encryptedDescription = Security.Encrypt(Description, publicKey);
-                string encryptedEmail = Security.Encrypt(email, publicKey);
+                string encryptedCompanyName = security.Encrypt(companyName, publicKey);
+                string encryptedDescription = security.Encrypt(Description, publicKey);
+                string encryptedEmail = security.Encrypt(email, publicKey);
                 Report reportToSend = new Report(null, industryName, encryptedCompanyName, encryptedDescription, encryptedEmail);
 
                 //Sends the information to StoreMessage and returns true if successful
@@ -60,9 +60,9 @@ namespace ReactApp1
                     // Decrypt each encrypted report and add it to the decryptedReports list
                     foreach (Report encryptedReport in encryptedReports)
                     {
-                        string decryptedCompanyName = Security.Decrypt(encryptedReport.CompanyName, privateKey);
-                        string decryptedDescription = Security.Decrypt(encryptedReport.Description, privateKey);
-                        string decryptedEmail = encryptedReport.Email != null ? Security.Decrypt(encryptedReport.Email, privateKey) : null;
+                        string decryptedCompanyName = security.Decrypt(encryptedReport.CompanyName, privateKey);
+                        string decryptedDescription = security.Decrypt(encryptedReport.Description, privateKey);
+                        string decryptedEmail = encryptedReport.Email != null ? security.Decrypt(encryptedReport.Email, privateKey) : null;
 
                         Report decryptedReport = new Report(encryptedReport.ReportID, industryName, decryptedCompanyName, decryptedDescription, decryptedEmail);
                         decryptedReports.Add(decryptedReport);

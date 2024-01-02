@@ -16,7 +16,7 @@ namespace ReactApp1
          * encrypts the private key with the derived key
          * Sends all of it to StoreRegulatorInformation, which then saves it in the database.
          */
-        public void CreateRegulator(string userName,string hashedPassword, string password, int industryID)
+        public void CreateRegulator(string userName,string hashedPassword, int industryID)
         {
             //Calls HashPassword with the password and sets the hashed password to the value returned
             //this hashedpassword is saved with other regulator information
@@ -32,7 +32,7 @@ namespace ReactApp1
             byte[] serializedPrivateKey = SerializeRSAParameters(privateKey);
 
             //gets a byte array as encryption key, using the called function
-            byte[] encryptionkey = KeyDeriverForEncryptionAndDecryptionOfPrivateKey(userName, password);
+            byte[] encryptionkey = KeyDeriverForEncryptionAndDecryptionOfPrivateKey(userName, hashedPassword);
 
             byte[] encryptedPrivateKey = EncryptKey(serializedPrivateKey, encryptionkey);
 
@@ -55,7 +55,24 @@ namespace ReactApp1
         }
         */
 
+        //Function for calling the preparedStatement and returning true if user exists
+        public bool UserExists(string userName)
+        {
+            if (ps.ExistingUser(userName))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        //Function for calling the preparedStatement and returning the hashedPassword
+        public string UserPassword(string userName)
+        {
+            return ps.GetHashedPassword(userName);
+        }
+
         //Function for verifying password using Bcrypt
+        /*
         public bool VerifyPassword(string userName, string password)
         {
             //If statement to verify the user exists in the database
@@ -70,7 +87,7 @@ namespace ReactApp1
             }
             //returns false if user doesn't exist
             return false;
-        }
+        }*/
 
         //Function for deriving a key from username and password
         private byte[] KeyDeriverForEncryptionAndDecryptionOfPrivateKey(string userName, string password)
@@ -185,7 +202,7 @@ namespace ReactApp1
         }
 
         //Encrypts the msg using the publicKey of the regulator with RSA
-        public static string Encrypt(string msg, RSAParameters publicKey)
+        public string Encrypt(string msg, RSAParameters publicKey)
         {
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {
@@ -199,7 +216,7 @@ namespace ReactApp1
         }
 
         //Decrypts the encrypted message using the private key with RSA
-        public static string Decrypt(string encryptedText, RSAParameters privateKey)
+        public string Decrypt(string encryptedText, RSAParameters privateKey)
         {
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {
