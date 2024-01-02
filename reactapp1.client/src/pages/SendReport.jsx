@@ -1,10 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./SendReport.css";
 
 export default function SendReport() {
-  useEffect(() => {
-    console.log("IT Secret key", import.meta.env.VITE_TEST_SECRET);
-  }, []);
+  useEffect(() => {}, []);
+
+  const [industry, setIndustry] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
+  const [email, setEmail] = useState("");
 
   const deriveKey = async (industry) => {
     let key;
@@ -94,11 +97,13 @@ export default function SendReport() {
     };
   };
 
-
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    let encryptionKy = deriveKey(industry);
+    let encryptedReport = await encryptValue(reportDetails, encryptionKy);
+    let ecnryptedCompany = await encryptValue(companyName, encryptionKy);
+
+    // Send report using Axios
   };
 
   return (
@@ -107,7 +112,11 @@ export default function SendReport() {
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="industry">Industry</label>
-          <select id="industry" className="dropdown">
+          <select
+            id="industry"
+            className="dropdown"
+            onChange={(e) => setIndustry(e.target.value)}
+          >
             <option value="Information Technology">
               Information Technology
             </option>
@@ -119,19 +128,29 @@ export default function SendReport() {
           </select>
         </div>
         <div>
-          <label htmlFor="industry">Company Name</label>
-          <input className="input" type="text" placeholder="Company Name" />
+          <label htmlFor="company">Company Name</label>
+          <input
+            id="company"
+            className="input"
+            type="text"
+            onChange={(e) => setCompanyName(e.target.value)}
+            placeholder="Company Name"
+          />
         </div>
         <div>
-          <label htmlFor="industry">Report Details</label>
+          <label htmlFor="description">Report Details</label>
           <textarea
+            onChange={(e) => setReportDetails(e.target.value)}
+            id="description"
             className="description"
             placeholder="Description"
           ></textarea>
         </div>
         <div>
-          <label htmlFor="industry">Email (Optional)</label>
+          <label htmlFor="email">Email (Optional)</label>
           <input
+            onChange={(e) => setEmail(e.target.value)}
+            id="email"
             className="input"
             type="email"
             placeholder="Email (optional)"
