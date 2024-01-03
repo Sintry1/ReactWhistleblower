@@ -19,7 +19,7 @@ namespace ReactApp1
         private void SetDefaultConnection()
         {
             // Set connection string with default values from .env file
-            connection.ConnectionString = $"Server={Env.GetString("DB_SERVER")};Database={Env.GetString("DB_NAME")};";
+            connection.ConnectionString = $"Server={Env.GetString("DB_SERVER")};Port={Env.GetString("DB_PORT")};Database={Env.GetString("DB_NAME")};";
         }
 
         // Set the connection credentials dynamically

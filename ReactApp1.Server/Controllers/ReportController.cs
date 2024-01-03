@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace ReactApp1
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class ReportController : ControllerBase
     {
         private readonly UserFunctionality userFunctionality;

@@ -1,16 +1,21 @@
-import "./Reports.css"
+import axios from "axios";
 import { useEffect, useState } from "react";
+import "./Reports.css";
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
+
+  const host = "http://localhost:5090/";
 
   useEffect(() => {
     // Fetch reports from the database
     const fetchReports = async () => {
       try {
-        const response = await fetch("/api/reports");
-        const data = await response.json();
-        setReports(data);
+        const response = await axios.get(
+          `${host}api/retrieveReports/${"Information Technology"}`,
+          {}
+        );
+        console.log(response.data);
       } catch (error) {
         console.error("Error fetching reports:", error);
       }
@@ -18,11 +23,63 @@ export default function Reports() {
 
     fetchReports();
   }, []);
-  
 
-  const decryptValue = async (encryption, masterKey) => {
+  const deriveKey = async (industry) => {
+    let key;
+    switch (industry) {
+      case "Information Technology":
+        key = import.meta.env.VITE_IT_SECRET_KEY;
+        break;
+      case "Financial Services":
+        key = import.meta.env.VITE_FINSERV_SECRET_KEY;
+        break;
+      case "Healthcare":
+        key = import.meta.env.VITE_HEALTHCARE_SECRET_KEY;
+        break;
+      case "Law Enforcement":
+        key = import.meta.env.VITE_LAWENF_SECRET_KEY;
+        break;
+      case "Leisure":
+        key = import.meta.env.VITE_LEISURE_SECRET_KEY;
+        break;
+      case "Hospitality":
+        key = import.meta.env.VITE_HOSPITALITY_SECRET_KEY;
+        break;
+      default:
+        break;
+    }
+
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+
+    const encodedKey = new TextEncoder().encode(key);
+
+    const keyMat = await crypto.subtle.importKey(
+      "raw",
+      encodedKey,
+      { name: "PBKDF2" },
+      false,
+      ["deriveBits", "deriveKey"]
+    );
+
+    const derivedKey = await crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: salt,
+        iterations: 100000,
+        hash: { name: "SHA-256" },
+      },
+      keyMat,
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt"]
+    );
+
+    return derivedKey;
+  };
+
+  const decryptValue = async (encryption, decryptionKey) => {
     try {
-      const keyMaterial = await crypto.subtle.exportKey("raw", masterKey);
+      const keyMaterial = await crypto.subtle.exportKey("raw", decryptionKey);
 
       const key = await crypto.subtle.deriveKey(
         {

@@ -9,7 +9,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowMyOrigin", builder =>
-    builder.WithOrigins("https://localhost:5173")
+    builder.AllowAnyOrigin()
     .AllowAnyMethod()
     .AllowAnyHeader());
 });
@@ -27,6 +27,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseCors("AllowMyOrigin");
 
 app.UseAuthorization();
 

@@ -3,8 +3,7 @@ import "./SendReport.css";
 import axios from "axios";
 
 export default function SendReport() {
-
-  const api = "http://localhost:5090/";
+  const host = "http://localhost:5090/";
   useEffect(() => {}, []);
 
   const [industry, setIndustry] = useState("");
@@ -34,7 +33,7 @@ export default function SendReport() {
         key = import.meta.env.VITE_HOSPITALITY_SECRET_KEY;
         break;
       default:
-        return key;
+        break;
     }
 
     const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -102,12 +101,19 @@ export default function SendReport() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let encryptionKy = deriveKey(industry);
-    let encryptedReport = await encryptValue(reportDetails, encryptionKy);
-    let ecnryptedCompany = await encryptValue(companyName, encryptionKy);
+    let encryptionKey = await deriveKey(industry);
+    let encryptedReport = await encryptValue(reportDetails, encryptionKey);
+    let ecnryptedCompany = await encryptValue(companyName, encryptionKey);
 
     // Send report using Axios
-    axios.post(`${api}api/controller/sendReport`, )
+    await axios
+      .post(`${host}api/Report/sendReport`, {
+        industry: industry,
+        companyName: ecnryptedCompany,
+        reportDetails: encryptedReport,
+        email: email,
+      },{headers: {'Content-Type': 'application/json'}}).then((res) => {console.log(res.data)})
+      .catch((err) => console.log("dlkfngjo",err));
   };
 
   return (
