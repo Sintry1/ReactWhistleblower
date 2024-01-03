@@ -42,7 +42,7 @@ namespace ReactApp1
                         $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE regulator_name = @userName) THEN CAST('TRUE' AS BIT) ELSE CAST('FALSE' AS BIT) END";
 
                     // Sets a mySQL parameter for the prepared statement
-                    MySqlParameter userNameParam = new MySqlParameter("@userName", userName);
+                    MySqlParameter userNameParam = new MySqlParameter("userName", userName);
 
                     // Adds the parameter to the command
                     command.Parameters.Add(userNameParam);
@@ -96,11 +96,11 @@ namespace ReactApp1
                         $"INSERT INTO regulators (regulator_name, password, public_key, private_key, industry_id) VALUES (@userName, @hash, @publicKey, @privateKey, industry_id)";
 
                     // Sets a mySQL parameter for the prepared statement
-                    MySqlParameter userNameParam = new MySqlParameter("@userName", userName);
-                    MySqlParameter hashParam = new MySqlParameter("@hash", hash);
-                    MySqlParameter publicKeyParam = new MySqlParameter("@publicKey", publicKey);
-                    MySqlParameter privateKeyParam = new MySqlParameter("@privateKey", encryptedPrivateKey);
-                    MySqlParameter industryIDParam = new MySqlParameter("@industry_id", industryId);
+                    MySqlParameter userNameParam = new MySqlParameter("userName", userName);
+                    MySqlParameter hashParam = new MySqlParameter("hash", hash);
+                    MySqlParameter publicKeyParam = new MySqlParameter("publicKey", publicKey);
+                    MySqlParameter privateKeyParam = new MySqlParameter("privateKey", encryptedPrivateKey);
+                    MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
 
                     // Adds the parameter to the command
                     command.Parameters.Add(userNameParam);
@@ -139,7 +139,7 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement for industry_id
                     MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("@industry_name", industryName);
+                    industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
                     industryIdCommand.Prepare();
 
                     // Execute the query to get industry_id
@@ -150,7 +150,7 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement for private_key
                     MySqlCommand privateKeyCommand = new MySqlCommand(privateKeyQuery, connection);
-                    privateKeyCommand.Parameters.AddWithValue("@industry_id", industryId);
+                    privateKeyCommand.Parameters.AddWithValue("industry_id", industryId);
                     privateKeyCommand.Prepare();
 
                     // Execute the query to get private_key
@@ -191,7 +191,7 @@ namespace ReactApp1
                         $"SELECT password FROM regulators WHERE regulator_name = @regulator_name";
 
                     // Sets a mySQL parameter for the prepared statement
-                    MySqlParameter userNameParam = new MySqlParameter("@regulator_name", userName);
+                    MySqlParameter userNameParam = new MySqlParameter("regulator_name", userName);
 
                     // Adds the parameter to the command
                     command.Parameters.Add(userNameParam);
@@ -238,7 +238,7 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement for industry_id
                     MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("@industry_name", report.IndustryName);
+                    industryIdCommand.Parameters.AddWithValue("industry_name", report.IndustryName);
                     industryIdCommand.Prepare();
 
                     // Execute the query to get industry_id
@@ -249,22 +249,22 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"INSERT INTO reports (industry_id, company_name, description, email) VALUES (@industry_id, @company_name, @Description, @email)";
+                        $"INSERT INTO reports (industry_id, company_name, description, email) VALUES (@industry_id, @company_name, @description, @email)";
 
                     // Sets mySQL parameters for the prepared statement
-                    MySqlParameter industryIDParam = new MySqlParameter("@industry_id", industryId);
-                    MySqlParameter companyNameParam = new MySqlParameter("@company_name", report.CompanyName);
-                    MySqlParameter msgParam = new MySqlParameter("@Description", report.Description);
+                    MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
+                    MySqlParameter companyNameParam = new MySqlParameter("company_name", report.CompanyName);
+                    MySqlParameter msgParam = new MySqlParameter("Description", report.Description);
 
                     // Check if email is null, and set the parameter accordingly
                     MySqlParameter emailParam;
                     if (string.IsNullOrEmpty(report.Email))
                     {
-                        emailParam = new MySqlParameter("@email", DBNull.Value);
+                        emailParam = new MySqlParameter("email", DBNull.Value);
                     }
                     else
                     {
-                        emailParam = new MySqlParameter("@email", report.Email);
+                        emailParam = new MySqlParameter("email", report.Email);
                     }
 
                     // Adds the parameters to the command
@@ -321,7 +321,7 @@ namespace ReactApp1
                         "SELECT * FROM reports WHERE industry_name = @industry_name";
 
                     // Set mySQL parameters for the prepared statement
-                    MySqlParameter industryIDParam = new MySqlParameter("@industry_name", industryName);
+                    MySqlParameter industryIDParam = new MySqlParameter("industry_name", industryName);
                     command.Parameters.Add(industryIDParam);
 
                     // Execute the query
@@ -373,7 +373,7 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement for industry_id
                     MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("@industry_name", industryName);
+                    industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
                     industryIdCommand.Prepare();
 
                     // Execute the query to get industry_id
@@ -387,7 +387,7 @@ namespace ReactApp1
                         $"SELECT public_key FROM regulators where industry_id = @industry_id";
 
                     // Sets mySQL parameters for the prepared statement
-                    MySqlParameter industryIDParam = new MySqlParameter("@industry_id", industryId);
+                    MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
 
                     // Adds the parameters to the command
                     command.Parameters.Add(industryIDParam);
