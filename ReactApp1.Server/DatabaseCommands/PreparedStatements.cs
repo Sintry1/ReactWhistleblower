@@ -71,7 +71,7 @@ namespace ReactApp1
 
 
             //Calls another prepared statement to get the industry ID from the industry name
-            int industryId = getIndustryID(industryName);
+            int industryId = GetIndustryID(industryName);
 
             //Set credentials for the user needed
             dbConnection.SetConnectionCredentials(Env.GetString("REGULATOR_WRITER_NAME"), Env.GetString("REGULATOR_WRITER_PASSWORD"));
@@ -123,7 +123,7 @@ namespace ReactApp1
         {
 
             //Calls another prepared statement to get the industry ID from the industry name
-            int industryId = getIndustryID(industryName);
+            int industryId = GetIndustryID(industryName);
 
             //Set credentials for the user needed
             dbConnection.SetConnectionCredentials(Env.GetString("REGULATOR_WRITER_NAME"), Env.GetString("REGULATOR_WRITER_PASSWORD"));
@@ -267,7 +267,7 @@ namespace ReactApp1
         public bool StoreReport(Report report)
         {
             //Calls another prepared statement to get the industry ID from the industry name
-            int industryId = getIndustryID(report.IndustryName);
+            int industryId = GetIndustryID(report.IndustryName);
             Console.WriteLine($"Got industry_id: {industryId}");
 
             try
@@ -358,7 +358,7 @@ namespace ReactApp1
             List<Report> reports = new List<Report>();
 
             //Calls another prepared statement to get the industry ID from the industry name
-            int industryId = getIndustryID(industryName);
+            int industryId = GetIndustryID(industryName);
             Console.WriteLine($"Got industry_id: {industryId}");
 
             // Set credentials for the user needed
@@ -419,7 +419,7 @@ namespace ReactApp1
             try
             {
                 //Calls another prepared statement to get the industry ID from the industry name
-                int industryId = getIndustryID(industryName);
+                int industryId = GetIndustryID(industryName);
 
                 // Set credentials for the user needed
                 dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
