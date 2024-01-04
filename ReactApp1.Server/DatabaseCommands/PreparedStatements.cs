@@ -28,6 +28,7 @@ namespace ReactApp1
         {
             //Set credentials for the user needed
             dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
+            Console.WriteLine("Usernname for DB: " + Env.GetString("OTHERS_READER_NAME")+ ", password for db: " + Env.GetString("OTHERS_READER_PASSWORD"));
 
             //uses mySqlConnection to open the connection and throws an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
