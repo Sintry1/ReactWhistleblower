@@ -18,6 +18,7 @@ namespace ReactApp1
 
         private void SetDefaultConnection()
         {
+            DotNetEnv.Env.Load();
             // Set connection string with default values from .env file
             connection.ConnectionString = $"Server={Env.GetString("DB_SERVER")};Port={Env.GetString("DB_PORT")};Database={Env.GetString("DB_NAME")};";
         }
