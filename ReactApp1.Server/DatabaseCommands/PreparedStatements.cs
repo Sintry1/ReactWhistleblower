@@ -266,7 +266,8 @@ namespace ReactApp1
              * Returns true to the function that called it IF it succeds
              * it returns false if it fails/catches an error
              */
-            public bool StoreReport(Report report)
+        
+        public bool StoreReport(Report report)
         {
             try
             {
