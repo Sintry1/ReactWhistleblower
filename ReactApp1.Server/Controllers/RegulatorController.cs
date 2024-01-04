@@ -1,27 +1,29 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ReactApp1.Server;
+using System.Collections.Generic;
 
 namespace ReactApp1
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class RegulatorController : ControllerBase
     {
         private readonly Security security;
 
         public RegulatorController()
         {
-            // Instantiate the UserFunctionality class when creating the controller
+            // Instantiate the Security class when creating the controller
             this.security = new Security();
         }
 
         [HttpPost("createRegulator")]
-        public IActionResult CreateRegulator([FromBody] RegulatorRequest regulatorRequest)
+        public IActionResult CreateRegulator([FromBody] Regulator regulator)
         {
             try
             {
-                string userName = regulatorRequest.UserName;
-                string hashedPassword = regulatorRequest.HashedPassword;
-                string industryName = regulatorRequest.IndustryName;
+                string userName = regulator.UserName;
+                string hashedPassword = regulator.HashedPassword;
+                string industryName = regulator.IndustryName;
 
                 security.CreateRegulator(userName, hashedPassword, industryName);
 
@@ -65,12 +67,5 @@ namespace ReactApp1
                 return StatusCode(500, new { Success = false, Message = "Internal server error." });
             }
         }
-    }
-
-    public class RegulatorRequest
-    {
-        public string UserName { get; set; }
-        public string HashedPassword { get; set; }
-        public string IndustryName { get; set; }
     }
 }
