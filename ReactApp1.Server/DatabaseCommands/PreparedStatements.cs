@@ -30,7 +30,7 @@ namespace ReactApp1
         public bool ExistingUser(string userName)
         {
             //Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
+            dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
 
             //uses mySqlConnection to open the connection and throws an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
@@ -166,7 +166,7 @@ namespace ReactApp1
         {
 
             //Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
+            dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
 
             //uses mySqlConnection to open the connection and throws an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
@@ -287,7 +287,7 @@ namespace ReactApp1
             int industryId = GetIndustryID(report.IndustryName);
             Console.WriteLine($"Got industry_id: {industryId}");
 
-            Console.WriteLine("Usernname for DB inide StoreReport: " + DotNetEnv.Env.GetString("REPORTS_WRITER_NAME") + ", password for db: " + Env.GetString("REPORTS_WRITER_PASSWORD"));
+            Console.WriteLine("Usernname for DB inide StoreReport: " + DotNetEnv.Env.GetString("REPORT_WRITER_NAME") + ", password for db: " + Env.GetString("REPORT_WRITER_PASSWORD"));
 
             try
             {
@@ -297,7 +297,7 @@ namespace ReactApp1
                 using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
                     // Set credentials for the user needed
-                    dbConnection.SetConnectionCredentials(Env.GetString("REPORTS_WRITER_NAME"), Env.GetString("REPORTS_WRITER_PASSWORD"));
+                    dbConnection.SetConnectionCredentials(Env.GetString("REPORT_WRITER_NAME"), Env.GetString("REPORT_WRITER_PASSWORD"));
                     Console.WriteLine("Connection opened successfully.");
 
                     try
@@ -382,7 +382,7 @@ namespace ReactApp1
             Console.WriteLine($"Got industry_id: {industryId}");
 
             // Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("REPORTS_READER_NAME"), Env.GetString("REPORTS_READER_PASSWORD"));
+            dbConnection.SetConnectionCredentials(Env.GetString("REPORT_READER_NAME"), Env.GetString("REPORT_READER_PASSWORD"));
 
             // Use mySqlConnection to open the connection and throw an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
@@ -442,7 +442,7 @@ namespace ReactApp1
                 int industryId = GetIndustryID(industryName);
 
                 // Set credentials for the user needed
-                dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
+                dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
 
                 // Use MySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
