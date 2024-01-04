@@ -77,16 +77,8 @@ namespace ReactApp1
                 try
                 {
 
-                    // Query to get industry_id based on industryName
-                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
-
-                    // Create and prepare an SQL statement for industry_id
-                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("@industry_name", industryName);
-                    industryIdCommand.Prepare();
-
-                    // Execute the query to get industry_id
-                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+                    //Calls another prepared statement to get the industry ID from the industry name
+                    int industryId = getIndustryID(industryName);
 
                     //creates an instance of MySqlCommand, a method in the mysql library
                     MySqlCommand command = new MySqlCommand(null, connection);
@@ -134,16 +126,8 @@ namespace ReactApp1
             {
                 try
                 {
-                    // Query to get industry_id based on industryName
-                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
-
-                    // Create and prepare an SQL statement for industry_id
-                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
-                    industryIdCommand.Prepare();
-
-                    // Execute the query to get industry_id
-                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+                    //Calls another prepared statement to get the industry ID from the industry name
+                    int industryId = getIndustryID(industryName);
 
                     // Query to get private_key based on industry_id
                     string privateKeyQuery = "SELECT private_key FROM regulators WHERE industry_id = @industry_id";
@@ -266,7 +250,6 @@ namespace ReactApp1
              * Returns true to the function that called it IF it succeds
              * it returns false if it fails/catches an error
              */
-        
         public bool StoreReport(Report report)
         {
             try
