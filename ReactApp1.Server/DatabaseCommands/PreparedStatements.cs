@@ -389,61 +389,76 @@ namespace ReactApp1
 
         public byte[] GetPublicKey(string industryName)
         {
-            //Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
-
-            //uses mySqlConnection to open the connection and throws an exception if it fails
-            using (MySqlConnection connection = dbConnection.OpenConnection())
+            try
             {
-                try
+                // Set credentials for the user needed
+                dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
+
+                // Use MySqlConnection to open the connection and throw an exception if it fails
+                using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
-                    // Query to get industry_id based on industryName
-                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+                    Console.WriteLine("Connection opened successfully.");
 
-                    // Create and prepare an SQL statement for industry_id
-                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
-                    industryIdCommand.Prepare();
+                    try
+                    {
+                        // Query to get industry_id based on industryName
+                        string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+                        Console.WriteLine($"Executing query: {industryIdQuery}");
 
-                    // Execute the query to get industry_id
-                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+                        // Create and prepare an SQL statement for industry_id
+                        MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
+                        industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
+                        industryIdCommand.Prepare();
 
-                    //creates an instance of MySqlCommand, a method in the mysql library
-                    MySqlCommand command = new MySqlCommand(null, connection);
+                        // Execute the query to get industry_id
+                        int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+                        Console.WriteLine($"Got industry_id: {industryId}");
 
-                    // Create and prepare an SQL statement.
-                    command.CommandText =
-                        $"SELECT public_key FROM regulators where industry_id = @industry_id";
+                        // Create an instance of MySqlCommand
+                        MySqlCommand command = new MySqlCommand(null, connection);
 
-                    // Sets mySQL parameters for the prepared statement
-                    MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
+                        // Create and prepare an SQL statement.
+                        command.CommandText =
+                            $"SELECT public_key FROM regulators WHERE industry_id = @industry_id";
+                        Console.WriteLine($"Executing query: {command.CommandText}");
 
-                    // Adds the parameters to the command
-                    command.Parameters.Add(industryIDParam);
+                        // Sets mySQL parameters for the prepared statement
+                        MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
 
-                    // Call Prepare after setting the Commandtext and Parameters.
-                    command.Prepare();
+                        // Adds the parameters to the command
+                        command.Parameters.Add(industryIDParam);
 
-                    // Execute the query and cast the result to a byte array
-                    object result = command.ExecuteScalar();
+                        // Call Prepare after setting the Commandtext and Parameters.
+                        command.Prepare();
 
-                    // Return the byte array
-                    return result as byte[];
+                        // Execute the query and cast the result to a byte array
+                        object result = command.ExecuteScalar();
+                        Console.WriteLine("Query executed successfully.");
 
-                }
-                catch (MySqlException ex)
-                {
-                    //return false if exception is thrown, may want to implement secure logging if we can to store the error message
-                    return null;
-                }
-                //executes at the end, no matter if it returned a value before or not
-                finally
-                {
-                    //closes the connection at the VERY end
-                    dbConnection.CloseConnection();
+                        // Return the byte array
+                        return result as byte[];
+                    }
+                    catch (MySqlException ex)
+                    {
+                        // Return null if an exception is thrown, may want to implement secure logging
+                        Console.WriteLine($"Error executing query: {ex.Message}");
+                        return null;
+                    }
+                    finally
+                    {
+                        // Close the connection at the end
+                        dbConnection.CloseConnection();
+                        Console.WriteLine("Connection closed.");
+                    }
                 }
             }
-        
+            catch (Exception ex)
+            {
+                // Handle the exception if opening the connection fails
+                Console.WriteLine($"Error opening connection: {ex.Message}");
+                return null;
+            }
         }
+
     }
 }

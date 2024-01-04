@@ -7,36 +7,47 @@ namespace ReactApp1
 
         private PreparedStatements ps = PreparedStatements.CreateInstance();
         private Security security = new Security();
-        public bool SendReport(string industryName,string companyName, string Description, string email)
+        public bool SendReport(string industryName, string companyName, string description, string email)
         {
             try
             {
-                //Calls the GetPublicKey prepared statement and gets the byte array
-                byte[] serializedpublicKey = ps.GetPublicKey(industryName);
+                // Calls the GetPublicKey prepared statement and gets the byte array
+                byte[] serializedPublicKey = ps.GetPublicKey(industryName);
+                Console.WriteLine("Got public key from the database.");
 
-                //Calls DeserializeRSAParameters, to turn the byte array back into a RSAParamater
-                RSAParameters publicKey = Security.DeserializeRSAParameters(serializedpublicKey);
-                
-                //encrypts each field with the RSAParamater
+                // Calls DeserializeRSAParameters, to turn the byte array back into an RSAParameter
+                RSAParameters publicKey = Security.DeserializeRSAParameters(serializedPublicKey);
+                Console.WriteLine("Deserialized public key.");
+
+                // Encrypts each field with the RSAParameter
                 string encryptedCompanyName = security.Encrypt(companyName, publicKey);
-                string encryptedDescription = security.Encrypt(Description, publicKey);
+                string encryptedDescription = security.Encrypt(description, publicKey);
                 string encryptedEmail = security.Encrypt(email, publicKey);
-                Report reportToSend = new Report( industryName, encryptedCompanyName, encryptedDescription, encryptedEmail);
+                Console.WriteLine("Encrypted report fields.");
 
-                //Sends the information to StoreMessage and returns true if successful
+                Report reportToSend = new Report(null, industryName, encryptedCompanyName, encryptedDescription, encryptedEmail);
+
+                // Sends the information to StoreReport and returns true if successful
                 if (ps.StoreReport(reportToSend))
                 {
+                    Console.WriteLine("Report stored successfully.");
                     return true;
                 }
-                else { 
-
-                //returns false if it failed to store the report
-                return false;
+                else
+                {
+                    // Returns false if it failed to store the report
+                    Console.WriteLine("Failed to store the report.");
+                    return false;
                 }
             }
-            // returns false if ANY exception is thrown
-            catch { return false;}
+            // Returns false if ANY exception is thrown
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
+            }
         }
+
 
         public List<Report> RetrieveReports(string industryName)
         {
