@@ -210,12 +210,12 @@ namespace ReactApp1
         {
             try
             {
-                // Set credentials for the user needed
-                dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
-
+                
                 // Use MySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
+                    // Set credentials for the user needed
+                    dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
                     Console.WriteLine("Connection opened successfully.");
 
                     try
@@ -272,12 +272,13 @@ namespace ReactApp1
 
             try
             {
-                // Set credentials for the user needed
-                dbConnection.SetConnectionCredentials(Env.GetString("REPORTS_WRITER_NAME"), Env.GetString("REPORTS_WRITER_PASSWORD"));
+
 
                 // Use mySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
+                    // Set credentials for the user needed
+                    dbConnection.SetConnectionCredentials(Env.GetString("REPORTS_WRITER_NAME"), Env.GetString("REPORTS_WRITER_PASSWORD"));
                     Console.WriteLine("Connection opened successfully.");
 
                     try
