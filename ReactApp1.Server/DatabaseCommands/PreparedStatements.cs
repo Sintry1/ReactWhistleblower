@@ -291,8 +291,6 @@ namespace ReactApp1
 
             try
             {
-
-
                 // Use mySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
