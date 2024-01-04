@@ -9,7 +9,6 @@ namespace ReactApp1
         private Security security = new Security();
         public bool SendReport(string industryName,string companyName, string Description, string email)
         {
-            
             try
             {
                 //Calls the GetPublicKey prepared statement and gets the byte array

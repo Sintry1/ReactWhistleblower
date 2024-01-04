@@ -254,7 +254,7 @@ namespace ReactApp1
                     // Sets mySQL parameters for the prepared statement
                     MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
                     MySqlParameter companyNameParam = new MySqlParameter("company_name", report.CompanyName);
-                    MySqlParameter msgParam = new MySqlParameter("Description", report.Description);
+                    MySqlParameter msgParam = new MySqlParameter("description", report.Description);
 
                     // Check if email is null, and set the parameter accordingly
                     MySqlParameter emailParam;
