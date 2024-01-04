@@ -9,10 +9,13 @@ namespace ReactApp1
          * this ensures that the connection can only be READ by other classes and not modified
          */
         private readonly DBConnection dbConnection;
+        
+        
 
         //Constructor for PreparedStatements
         private PreparedStatements()
         {
+            Env.Load();
             dbConnection = DBConnection.CreateInstance();
         }
 
@@ -210,9 +213,10 @@ namespace ReactApp1
         {
             try
             {
+            
                 // Set credentials for the user needed
-                dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
-                Console.WriteLine("Usernname for DB: " + Env.GetString("OTHERS_READER_NAME") + ", password for db: " + Env.GetString("OTHERS_READER_PASSWORD"));
+                dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
+                Console.WriteLine("Usernname for DB inside GetIndustryID: " + DotNetEnv.Env.GetString("OTHER_READER_NAME") + ", password for db: " + DotNetEnv.Env.GetString("OTHER_READER_PASSWORD"));
 
                 // Use MySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
@@ -227,16 +231,27 @@ namespace ReactApp1
                         Console.WriteLine($"Executing query: {industryIdQuery}");
 
                         // Create and prepare an SQL statement for industry_id
+                        Console.WriteLine("Creating command...");
                         MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                        industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
+
+                        Console.WriteLine("Adding parameters...");
+                        industryIdCommand.Parameters.AddWithValue("@industry_name", industryName);
+
+                        Console.WriteLine("Preparing command...");
                         industryIdCommand.Prepare();
+
+                        Console.WriteLine("industryIdCommand.Prepare(); Line reached");
 
                         // Execute the query to get industry_id
                         int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
                         Console.WriteLine($"Got industry_id: {industryId}");
 
                         return industryId;
-                    }
+                    }catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"Error preparing command: {ex.Message}");
+    throw;
+}
                     catch (MySqlException ex)
                     {
                         // Handle the exception (e.g., log it) and rethrow
@@ -269,10 +284,11 @@ namespace ReactApp1
         public bool StoreReport(Report report)
         {
             //Calls another prepared statement to get the industry ID from the industry name
+            DotNetEnv.Env.Load();
             int industryId = GetIndustryID(report.IndustryName);
             Console.WriteLine($"Got industry_id: {industryId}");
 
-            Console.WriteLine("Usernname for DB: " + Env.GetString("REPORTS_WRITER_NAME") + ", password for db: " + Env.GetString("REPORTS_WRITER_PASSWORD"));
+            Console.WriteLine("Usernname for DB inide StoreReport: " + DotNetEnv.Env.GetString("REPORTS_WRITER_NAME") + ", password for db: " + Env.GetString("REPORTS_WRITER_PASSWORD"));
 
             try
             {
