@@ -32,12 +32,12 @@ export default function Register() {
 
   const registerRegulator = async (email, password, industry) => {
     const hashedPassword = hashPassword(password);
-    const response = await fetch("/api/createRegulator", {
+    const response = await fetch("http://localhost:5090/api/createRegulator", {
       method: "POST",
       body: JSON.stringify({
-        email,
-        password: hashedPassword,
-        industry,
+        Username: email,
+        HashedPassword: hashedPassword,
+        IndustryName: industry,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -47,7 +47,9 @@ export default function Register() {
     return data;
   };
 
-  const handleRegister = () => {
+  const handleRegister = (e) => {
+    e.preventDefault();
+
     if (
       email === "" ||
       password === "" ||
@@ -74,7 +76,7 @@ export default function Register() {
 
   return (
     <div>
-      <form onSubmit={handleRegister()}>
+      <form onSubmit={handleRegister}>
         <input
           type="email"
           placeholder="Email"

@@ -1,4 +1,3 @@
-import CryptoJS from "crypto-js";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import bcrypt from "bcryptjs";
@@ -62,6 +61,7 @@ export default function Login() {
         </div>
         <button type="submit"><Link to="/reports">Login</Link></button>
       </form>
+      <button><Link to="/register">Register</Link></button>
     </div>
   );
 }
