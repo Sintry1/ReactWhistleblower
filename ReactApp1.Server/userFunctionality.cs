@@ -35,7 +35,7 @@ namespace ReactApp1
                 }
             }
             // returns false if ANY exception is thrown
-            catch { return false; }
+            catch { return false;}
         }
 
         public List<Report> RetrieveReports(string industryName)

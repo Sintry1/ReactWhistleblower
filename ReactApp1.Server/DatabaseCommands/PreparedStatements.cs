@@ -225,76 +225,94 @@ namespace ReactApp1
          */
         public bool StoreReport(Report report)
         {
-            // Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("REPORTS_WRITER_NAME"), Env.GetString("REPORTS_WRITER_PASSWORD"));
-
-            // Use mySqlConnection to open the connection and throw an exception if it fails
-            using (MySqlConnection connection = dbConnection.OpenConnection())
+            try
             {
-                try
+                // Set credentials for the user needed
+                dbConnection.SetConnectionCredentials(Env.GetString("REPORTS_WRITER_NAME"), Env.GetString("REPORTS_WRITER_PASSWORD"));
+
+                // Use mySqlConnection to open the connection and throw an exception if it fails
+                using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
-                    // Query to get industry_id based on industryName
-                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+                    Console.WriteLine("Connection opened successfully.");
 
-                    // Create and prepare an SQL statement for industry_id
-                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("industry_name", report.IndustryName);
-                    industryIdCommand.Prepare();
-
-                    // Execute the query to get industry_id
-                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
-
-                    // Create an instance of MySqlCommand
-                    MySqlCommand command = new MySqlCommand(null, connection);
-
-                    // Create and prepare an SQL statement.
-                    command.CommandText =
-                        $"INSERT INTO reports (industry_id, company_name, description, email) VALUES (@industry_id, @company_name, @description, @email)";
-
-                    // Sets mySQL parameters for the prepared statement
-                    MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
-                    MySqlParameter companyNameParam = new MySqlParameter("company_name", report.CompanyName);
-                    MySqlParameter msgParam = new MySqlParameter("description", report.Description);
-
-                    // Check if email is null, and set the parameter accordingly
-                    MySqlParameter emailParam;
-                    if (string.IsNullOrEmpty(report.Email))
+                    try
                     {
-                        emailParam = new MySqlParameter("email", DBNull.Value);
+                        // Query to get industry_id based on industryName
+                        string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+                        Console.WriteLine($"Executing query: {industryIdQuery}");
+
+                        // Create and prepare an SQL statement for industry_id
+                        MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
+                        industryIdCommand.Parameters.AddWithValue("industry_name", report.IndustryName);
+                        industryIdCommand.Prepare();
+
+                        // Execute the query to get industry_id
+                        int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+                        Console.WriteLine($"Got industry_id: {industryId}");
+
+                        // Create an instance of MySqlCommand
+                        MySqlCommand command = new MySqlCommand(null, connection);
+
+                        // Create and prepare an SQL statement.
+                        command.CommandText =
+                            $"INSERT INTO reports (industry_id, company_name, description, email) VALUES (@industry_id, @company_name, @description, @email)";
+                        Console.WriteLine($"Executing query: {command.CommandText}");
+
+                        // Sets mySQL parameters for the prepared statement
+                        MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
+                        MySqlParameter companyNameParam = new MySqlParameter("company_name", report.CompanyName);
+                        MySqlParameter msgParam = new MySqlParameter("description", report.Description);
+
+                        // Check if email is null, and set the parameter accordingly
+                        MySqlParameter emailParam;
+                        if (string.IsNullOrEmpty(report.Email))
+                        {
+                            emailParam = new MySqlParameter("email", DBNull.Value);
+                        }
+                        else
+                        {
+                            emailParam = new MySqlParameter("email", report.Email);
+                        }
+
+                        // Adds the parameters to the command
+                        command.Parameters.Add(industryIDParam);
+                        command.Parameters.Add(companyNameParam);
+                        command.Parameters.Add(msgParam);
+                        command.Parameters.Add(emailParam);
+
+                        // Call Prepare after setting the Commandtext and Parameters.
+                        command.Prepare();
+
+                        // Execute the query
+                        object result = command.ExecuteScalar();
+                        Console.WriteLine($"Query executed successfully. Result: {result}");
+
+                        // Return true if no exceptions are thrown
+                        return true;
                     }
-                    else
+                    catch (MySqlException ex)
                     {
-                        emailParam = new MySqlParameter("email", report.Email);
+                        // Handle the exception (e.g., log it) and return false
+                        // You may want to implement secure logging to store the error message
+                        Console.WriteLine($"Error executing query: {ex.Message}");
+                        return false;
                     }
-
-                    // Adds the parameters to the command
-                    command.Parameters.Add(industryIDParam);
-                    command.Parameters.Add(companyNameParam);
-                    command.Parameters.Add(msgParam);
-                    command.Parameters.Add(emailParam);
-
-                    // Call Prepare after setting the Commandtext and Parameters.
-                    command.Prepare();
-
-                    // Execute the query
-                    object result = command.ExecuteScalar();
-
-                    // Return true if no exceptions are thrown
-                    return true;
-                }
-                catch (MySqlException ex)
-                {
-                    // Handle the exception (e.g., log it) and return false
-                    // You may want to implement secure logging to store the error message
-                    return false;
-                }
-                finally
-                {
-                    // Close the connection at the end
-                    dbConnection.CloseConnection();
+                    finally
+                    {
+                        // Close the connection at the end
+                        dbConnection.CloseConnection();
+                        Console.WriteLine("Connection closed.");
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                // Handle the exception if opening the connection fails
+                Console.WriteLine($"Error opening connection: {ex.Message}");
+                return false;
+            }
         }
+
 
         /*
          * Fetches all reports that have the same industry ID as passed to the function
@@ -313,7 +331,6 @@ namespace ReactApp1
             {
                 try
                 {
-
                     // Query to get industry_id based on industryName
                     string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
 
