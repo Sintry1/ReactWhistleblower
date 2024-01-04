@@ -206,55 +206,64 @@ namespace ReactApp1
             }
         }
 
-        public int getIndustryID(string industryName)
+        public int GetIndustryID(string industryName)
         {
-            // Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
-
-            // Use mySqlConnection to open the connection and throw an exception if it fails
-            using (MySqlConnection connection = dbConnection.OpenConnection())
+            try
             {
-                Console.WriteLine("Connection opened successfully.");
+                // Set credentials for the user needed
+                dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
 
-                try
+                // Use MySqlConnection to open the connection and throw an exception if it fails
+                using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
-                    // Query to get industry_id based on industryName
-                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
-                    Console.WriteLine($"Executing query: {industryIdQuery}");
+                    Console.WriteLine("Connection opened successfully.");
 
-                    // Create and prepare an SQL statement for industry_id
-                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
-                    industryIdCommand.Prepare();
+                    try
+                    {
+                        // Query to get industry_id based on industryName
+                        string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+                        Console.WriteLine($"Executing query: {industryIdQuery}");
 
-                    // Execute the query to get industry_id
-                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
-                    Console.WriteLine($"Got industry_id: {industryId}");
+                        // Create and prepare an SQL statement for industry_id
+                        MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
+                        industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
+                        industryIdCommand.Prepare();
 
-                    return industryId;
+                        // Execute the query to get industry_id
+                        int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+                        Console.WriteLine($"Got industry_id: {industryId}");
+
+                        return industryId;
+                    }
+                    catch (MySqlException ex)
+                    {
+                        // Handle the exception (e.g., log it) and rethrow
+                        Console.WriteLine($"Error executing query: {ex.Message}");
+                        throw; // Rethrow the caught exception
+                    }
+                    finally
+                    {
+                        // Close the connection at the end
+                        dbConnection.CloseConnection();
+                        Console.WriteLine("Connection closed.");
+                    }
                 }
-                catch (MySqlException ex)
-                {
-                    // Handle the exception (e.g., log it) and return false
-                    // You may want to implement secure logging to store the error message
-                    Console.WriteLine($"Error executing query: {ex.Message}");
-                    throw ex;
-                }
-                finally
-                {
-                    // Close the connection at the end
-                    dbConnection.CloseConnection();
-                    Console.WriteLine("Connection closed.");
-                }
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception if opening the connection fails
+                Console.WriteLine($"Error opening connection: {ex.Message}");
+                throw; // Rethrow the caught exception
             }
         }
 
-            /*
-             * Takes an object of type Report, made using the Report class
-             * Tries to takes parameters from the object and sets them as paramaters for the prepared statement
-             * Returns true to the function that called it IF it succeds
-             * it returns false if it fails/catches an error
-             */
+
+        /*
+         * Takes an object of type Report, made using the Report class
+         * Tries to takes parameters from the object and sets them as paramaters for the prepared statement
+         * Returns true to the function that called it IF it succeds
+         * it returns false if it fails/catches an error
+         */
         public bool StoreReport(Report report)
         {
             //Calls another prepared statement to get the industry ID from the industry name
