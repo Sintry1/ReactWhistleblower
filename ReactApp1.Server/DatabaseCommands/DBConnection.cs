@@ -7,8 +7,10 @@ namespace ReactApp1
     {
 
         private MySqlConnection connection;
+        private string serverConnectionString;
+        private string userCredentials;
 
-        //Constructor for DBConnection
+        // Constructor for DBConnection
         private DBConnection()
         {
             Env.Load();
@@ -19,15 +21,17 @@ namespace ReactApp1
 
         private void SetDefaultConnection()
         {
-            
+            Env.Load();
+
             // Set connection string with default values from .env file
-            connection.ConnectionString = $"Server={Env.GetString("DB_SERVER")};Port={Env.GetString("DB_PORT")};Database={Env.GetString("DB_NAME")};";
+            serverConnectionString = $"Server={Env.GetString("DB_SERVER")};Port={Env.GetString("DB_PORT")};Database={Env.GetString("DB_NAME")};";
+            connection.ConnectionString = serverConnectionString;
         }
 
         // Set the connection credentials dynamically
         public void SetConnectionCredentials(string username, string password)
         {
-            connection.ConnectionString += $"User ID={username};Password={password};";
+            userCredentials = $"User ID={username};Password={password};";
         }
 
         public static DBConnection CreateInstance()
@@ -42,6 +46,9 @@ namespace ReactApp1
             //tries to execute code
             try
             {
+                // Concatenate the server connection string and user credentials
+                connection.ConnectionString = $"{serverConnectionString}{userCredentials}";
+
                 //checks if the connection already is open
                 if (connection.State != System.Data.ConnectionState.Open)
                 {
