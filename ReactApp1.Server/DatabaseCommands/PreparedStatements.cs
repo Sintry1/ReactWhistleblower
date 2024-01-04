@@ -272,6 +272,8 @@ namespace ReactApp1
             int industryId = GetIndustryID(report.IndustryName);
             Console.WriteLine($"Got industry_id: {industryId}");
 
+            Console.WriteLine("Usernname for DB: " + Env.GetString("REPORTS_WRITER_NAME") + ", password for db: " + Env.GetString("REPORTS_WRITER_PASSWORD"));
+
             try
             {
 
