@@ -25,7 +25,7 @@ namespace ReactApp1
                 string encryptedEmail = security.Encrypt(email, publicKey);
                 Console.WriteLine("Encrypted report fields.");
 
-                Report reportToSend = new Report(null, industryName, encryptedCompanyName, encryptedDescription, encryptedEmail);
+                Report reportToSend = new Report(industryName, encryptedCompanyName, encryptedDescription, encryptedEmail);
 
                 // Sends the information to StoreReport and returns true if successful
                 if (ps.StoreReport(reportToSend))
