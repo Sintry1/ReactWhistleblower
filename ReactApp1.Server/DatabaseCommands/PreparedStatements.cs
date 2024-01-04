@@ -313,15 +313,27 @@ namespace ReactApp1
             {
                 try
                 {
+
+                    // Query to get industry_id based on industryName
+                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+
+                    // Create and prepare an SQL statement for industry_id
+                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
+                    industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
+                    industryIdCommand.Prepare();
+
+                    // Execute the query to get industry_id
+                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+
                     // Create an instance of MySqlCommand
                     MySqlCommand command = new MySqlCommand(null, connection);
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        "SELECT * FROM reports WHERE industry_name = @industry_name";
+                        "SELECT * FROM reports WHERE industry_id = @industry_id";
 
                     // Set mySQL parameters for the prepared statement
-                    MySqlParameter industryIDParam = new MySqlParameter("industry_name", industryName);
+                    MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
                     command.Parameters.Add(industryIDParam);
 
                     // Execute the query
