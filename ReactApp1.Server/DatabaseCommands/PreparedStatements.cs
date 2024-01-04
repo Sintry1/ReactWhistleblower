@@ -72,7 +72,6 @@ namespace ReactApp1
         public void StoreRegulatorInformation(string userName, string hash, byte[] publicKey, byte[] encryptedPrivateKey, string industryName)
         {
 
-
             //Calls another prepared statement to get the industry ID from the industry name
             int industryId = GetIndustryID(industryName);
 
