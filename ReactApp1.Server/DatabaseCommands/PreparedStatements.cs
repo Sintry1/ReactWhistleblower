@@ -68,6 +68,11 @@ namespace ReactApp1
         //Stores username and the hashedPassword, this method may be COMPLETELY obsolete, thanks to firebase
         public void StoreRegulatorInformation(string userName, string hash, byte[] publicKey, byte[] encryptedPrivateKey, string industryName)
         {
+
+
+            //Calls another prepared statement to get the industry ID from the industry name
+            int industryId = getIndustryID(industryName);
+
             //Set credentials for the user needed
             dbConnection.SetConnectionCredentials(Env.GetString("REGULATOR_WRITER_NAME"), Env.GetString("REGULATOR_WRITER_PASSWORD"));
 
@@ -77,8 +82,6 @@ namespace ReactApp1
                 try
                 {
 
-                    //Calls another prepared statement to get the industry ID from the industry name
-                    int industryId = getIndustryID(industryName);
 
                     //creates an instance of MySqlCommand, a method in the mysql library
                     MySqlCommand command = new MySqlCommand(null, connection);
@@ -118,6 +121,10 @@ namespace ReactApp1
 
         public byte[] GetPrivateKey(string industryName)
         {
+
+            //Calls another prepared statement to get the industry ID from the industry name
+            int industryId = getIndustryID(industryName);
+
             //Set credentials for the user needed
             dbConnection.SetConnectionCredentials(Env.GetString("REGULATOR_WRITER_NAME"), Env.GetString("REGULATOR_WRITER_PASSWORD"));
 
@@ -126,8 +133,6 @@ namespace ReactApp1
             {
                 try
                 {
-                    //Calls another prepared statement to get the industry ID from the industry name
-                    int industryId = getIndustryID(industryName);
 
                     // Query to get private_key based on industry_id
                     string privateKeyQuery = "SELECT private_key FROM regulators WHERE industry_id = @industry_id";
@@ -252,6 +257,10 @@ namespace ReactApp1
              */
         public bool StoreReport(Report report)
         {
+            //Calls another prepared statement to get the industry ID from the industry name
+            int industryId = getIndustryID(report.IndustryName);
+            Console.WriteLine($"Got industry_id: {industryId}");
+
             try
             {
                 // Set credentials for the user needed
@@ -264,9 +273,7 @@ namespace ReactApp1
 
                     try
                     {
-                        //Calls another prepared statement to get the industry ID from the industry name
-                        int industryId = getIndustryID(report.IndustryName);
-                        Console.WriteLine($"Got industry_id: {industryId}");
+
 
                         // Create an instance of MySqlCommand
                         MySqlCommand command = new MySqlCommand(null, connection);
@@ -341,6 +348,10 @@ namespace ReactApp1
         {
             List<Report> reports = new List<Report>();
 
+            //Calls another prepared statement to get the industry ID from the industry name
+            int industryId = getIndustryID(industryName);
+            Console.WriteLine($"Got industry_id: {industryId}");
+
             // Set credentials for the user needed
             dbConnection.SetConnectionCredentials(Env.GetString("REPORTS_READER_NAME"), Env.GetString("REPORTS_READER_PASSWORD"));
 
@@ -349,17 +360,6 @@ namespace ReactApp1
             {
                 try
                 {
-                    // Query to get industry_id based on industryName
-                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
-
-                    // Create and prepare an SQL statement for industry_id
-                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
-                    industryIdCommand.Prepare();
-
-                    // Execute the query to get industry_id
-                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
-
                     // Create an instance of MySqlCommand
                     MySqlCommand command = new MySqlCommand(null, connection);
 
@@ -409,6 +409,9 @@ namespace ReactApp1
         {
             try
             {
+                //Calls another prepared statement to get the industry ID from the industry name
+                int industryId = getIndustryID(industryName);
+
                 // Set credentials for the user needed
                 dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
 
@@ -419,9 +422,6 @@ namespace ReactApp1
 
                     try
                     {
-                        //Calls another prepared statement to get the industry ID from the industry name
-                        int industryId = getIndustryID(industryName);
-
 
                         // Create an instance of MySqlCommand
                         MySqlCommand command = new MySqlCommand(null, connection);
@@ -451,7 +451,7 @@ namespace ReactApp1
                     {
                         // Return null if an exception is thrown, may want to implement secure logging
                         Console.WriteLine($"Error executing query: {ex.Message}");
-                        return null;
+                        throw ex;
                     }
                     finally
                     {
