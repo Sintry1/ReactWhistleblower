@@ -347,7 +347,7 @@ namespace ReactApp1
                             string description = reader.GetString("description");
                             string email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email");
 
-                            Report report = new Report(reportID, industryName, companyName, description, email);
+                            Report report = new Report(industryName, companyName, description, email);
                             reports.Add(report);
                         }
                     }

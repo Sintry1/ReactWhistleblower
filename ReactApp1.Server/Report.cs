@@ -9,9 +9,9 @@
         public string? Email { get; set; }
 
         // Constructor for reports
-        public Report(int? reportID, string industryName, string companyName, string description, string? email)
+        public Report(string industryName, string companyName, string description, string? email)
         {
-            ReportID = reportID;
+            ReportID = null;
             IndustryName = industryName;
             CompanyName = companyName;
             Description = description;

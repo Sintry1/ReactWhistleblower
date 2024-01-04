@@ -21,7 +21,7 @@ namespace ReactApp1
                 string encryptedCompanyName = security.Encrypt(companyName, publicKey);
                 string encryptedDescription = security.Encrypt(Description, publicKey);
                 string encryptedEmail = security.Encrypt(email, publicKey);
-                Report reportToSend = new Report(null, industryName, encryptedCompanyName, encryptedDescription, encryptedEmail);
+                Report reportToSend = new Report( industryName, encryptedCompanyName, encryptedDescription, encryptedEmail);
 
                 //Sends the information to StoreMessage and returns true if successful
                 if (ps.StoreReport(reportToSend))
@@ -30,7 +30,7 @@ namespace ReactApp1
                 }
                 else { 
 
-                //returns fall if it failed to store the report
+                //returns false if it failed to store the report
                 return false;
                 }
             }
@@ -63,7 +63,7 @@ namespace ReactApp1
                         string decryptedDescription = security.Decrypt(encryptedReport.Description, privateKey);
                         string decryptedEmail = encryptedReport.Email != null ? security.Decrypt(encryptedReport.Email, privateKey) : null;
 
-                        Report decryptedReport = new Report(encryptedReport.ReportID, industryName, decryptedCompanyName, decryptedDescription, decryptedEmail);
+                        Report decryptedReport = new Report(industryName, decryptedCompanyName, decryptedDescription, decryptedEmail);
                         decryptedReports.Add(decryptedReport);
                     }
 

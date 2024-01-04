@@ -104,16 +104,27 @@ export default function SendReport() {
     let encryptionKey = await deriveKey(industry);
     let encryptedReport = await encryptValue(reportDetails, encryptionKey);
     let ecnryptedCompany = await encryptValue(companyName, encryptionKey);
+    let encryptedReportString = btoa(
+      String.fromCharCode.apply(null, encryptedReport.input)
+    );
+    let ecnryptedCompanyString = btoa(
+      String.fromCharCode.apply(null, ecnryptedCompany.input)
+    );
 
     // Send report using Axios
-    await axios
-      .post(`${host}api/Report/sendReport`, {
-        industry: industry,
-        companyName: ecnryptedCompany,
-        reportDetails: encryptedReport,
-        email: email,
-      },{headers: {'Content-Type': 'application/json'}}).then((res) => {console.log(res.data)})
-      .catch((err) => console.log("dlkfngjo",err));
+    await fetch("http://localhost:5090/api/Report/sendReport", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        IndustryName: industry,
+        CompanyName: ecnryptedCompanyString,
+        Description: encryptedReportString,
+        Email: email,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((err) => console.log("dlkfngjo", err));
   };
 
   return (
