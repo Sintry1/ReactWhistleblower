@@ -77,16 +77,8 @@ namespace ReactApp1
                 try
                 {
 
-                    // Query to get industry_id based on industryName
-                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
-
-                    // Create and prepare an SQL statement for industry_id
-                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("@industry_name", industryName);
-                    industryIdCommand.Prepare();
-
-                    // Execute the query to get industry_id
-                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+                    //Calls another prepared statement to get the industry ID from the industry name
+                    int industryId = getIndustryID(industryName);
 
                     //creates an instance of MySqlCommand, a method in the mysql library
                     MySqlCommand command = new MySqlCommand(null, connection);
@@ -134,16 +126,8 @@ namespace ReactApp1
             {
                 try
                 {
-                    // Query to get industry_id based on industryName
-                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
-
-                    // Create and prepare an SQL statement for industry_id
-                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                    industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
-                    industryIdCommand.Prepare();
-
-                    // Execute the query to get industry_id
-                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+                    //Calls another prepared statement to get the industry ID from the industry name
+                    int industryId = getIndustryID(industryName);
 
                     // Query to get private_key based on industry_id
                     string privateKeyQuery = "SELECT private_key FROM regulators WHERE industry_id = @industry_id";
@@ -217,12 +201,55 @@ namespace ReactApp1
             }
         }
 
-        /*
-         * Takes an object of type Report, made using the Report class
-         * Tries to takes parameters from the object and sets them as paramaters for the prepared statement
-         * Returns true to the function that called it IF it succeds
-         * it returns false if it fails/catches an error
-         */
+        public int getIndustryID(string industryName)
+        {
+            // Set credentials for the user needed
+            dbConnection.SetConnectionCredentials(Env.GetString("OTHERS_READER_NAME"), Env.GetString("OTHERS_READER_PASSWORD"));
+
+            // Use mySqlConnection to open the connection and throw an exception if it fails
+            using (MySqlConnection connection = dbConnection.OpenConnection())
+            {
+                Console.WriteLine("Connection opened successfully.");
+
+                try
+                {
+                    // Query to get industry_id based on industryName
+                    string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+                    Console.WriteLine($"Executing query: {industryIdQuery}");
+
+                    // Create and prepare an SQL statement for industry_id
+                    MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
+                    industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
+                    industryIdCommand.Prepare();
+
+                    // Execute the query to get industry_id
+                    int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+                    Console.WriteLine($"Got industry_id: {industryId}");
+
+                    return industryId;
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle the exception (e.g., log it) and return false
+                    // You may want to implement secure logging to store the error message
+                    Console.WriteLine($"Error executing query: {ex.Message}");
+                    throw ex;
+                }
+                finally
+                {
+                    // Close the connection at the end
+                    dbConnection.CloseConnection();
+                    Console.WriteLine("Connection closed.");
+                }
+            }
+        }
+
+            /*
+             * Takes an object of type Report, made using the Report class
+             * Tries to takes parameters from the object and sets them as paramaters for the prepared statement
+             * Returns true to the function that called it IF it succeds
+             * it returns false if it fails/catches an error
+             */
         public bool StoreReport(Report report)
         {
             try
@@ -237,17 +264,8 @@ namespace ReactApp1
 
                     try
                     {
-                        // Query to get industry_id based on industryName
-                        string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
-                        Console.WriteLine($"Executing query: {industryIdQuery}");
-
-                        // Create and prepare an SQL statement for industry_id
-                        MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                        industryIdCommand.Parameters.AddWithValue("industry_name", report.IndustryName);
-                        industryIdCommand.Prepare();
-
-                        // Execute the query to get industry_id
-                        int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
+                        //Calls another prepared statement to get the industry ID from the industry name
+                        int industryId = getIndustryID(report.IndustryName);
                         Console.WriteLine($"Got industry_id: {industryId}");
 
                         // Create an instance of MySqlCommand
@@ -401,18 +419,9 @@ namespace ReactApp1
 
                     try
                     {
-                        // Query to get industry_id based on industryName
-                        string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
-                        Console.WriteLine($"Executing query: {industryIdQuery}");
+                        //Calls another prepared statement to get the industry ID from the industry name
+                        int industryId = getIndustryID(industryName);
 
-                        // Create and prepare an SQL statement for industry_id
-                        MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
-                        industryIdCommand.Parameters.AddWithValue("industry_name", industryName);
-                        industryIdCommand.Prepare();
-
-                        // Execute the query to get industry_id
-                        int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
-                        Console.WriteLine($"Got industry_id: {industryId}");
 
                         // Create an instance of MySqlCommand
                         MySqlCommand command = new MySqlCommand(null, connection);
