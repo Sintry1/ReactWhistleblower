@@ -90,27 +90,41 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"INSERT INTO regulators (regulator_name, password, public_key, private_key, industry_id) VALUES (@userName, @hash, @publicKey, @privateKey, industry_id)";
+                        $"INSERT INTO regulators (regulator_name, password, public_key, private_key, industry_id) VALUES (@userName, @hash, @publicKey, @privateKey, @industry_id)";
 
                     // Sets a mySQL parameter for the prepared statement
+                    Console.WriteLine("Setting up UserNameParam in StoreRegulatorInforamtion");
                     MySqlParameter userNameParam = new MySqlParameter("userName", userName);
+                    Console.WriteLine("Set up userNameParam:" + userNameParam + "Setting up hashParam");
                     MySqlParameter hashParam = new MySqlParameter("hash", hash);
+                    Console.WriteLine("Set up hashParam:" + userNameParam + "Setting up publicKeyParam");
                     MySqlParameter publicKeyParam = new MySqlParameter("publicKey", publicKey);
+                    Console.WriteLine("Set up publicKeyParam:" + userNameParam + "Setting up privateKeyParam");
                     MySqlParameter privateKeyParam = new MySqlParameter("privateKey", encryptedPrivateKey);
+                    Console.WriteLine("Set up privateKeyParam:" + userNameParam + "Setting up industryIDParam");
                     MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
+                    Console.WriteLine("Set up industryIDParam" + industryIDParam);
 
                     // Adds the parameter to the command
+                    Console.WriteLine("Adding usernameParam");
                     command.Parameters.Add(userNameParam);
+                    Console.WriteLine("usernameParam added, adding hashParam");
                     command.Parameters.Add(hashParam);
+                    Console.WriteLine("hashParam added, adding publicKeyParam");
                     command.Parameters.Add(publicKeyParam);
+                    Console.WriteLine("publicKeyParam added, adding privateKeyParam");
                     command.Parameters.Add(privateKeyParam);
+                    Console.WriteLine("privateKeyParam added, adding industryIDParam");
                     command.Parameters.Add(industryIDParam);
+                    Console.WriteLine("industryIDParam added, calling Prepare()");
 
                     // Call Prepare after setting the Commandtext and Parameters.
                     command.Prepare();
+                    Console.WriteLine("Prepare() called, executing query");
 
                     // Execute the query and cast the result to a boolean
                     command.ExecuteNonQuery();
+                    Console.WriteLine("Query executed successfully");
                 }
                 //executes at the end, no matter if it returned a value before or not
                 finally

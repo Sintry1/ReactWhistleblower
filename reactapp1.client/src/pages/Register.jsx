@@ -32,7 +32,8 @@ export default function Register() {
 
   const registerRegulator = async (email, password, industry) => {
     const hashedPassword = hashPassword(password);
-    const response = await fetch("http://localhost:5090/api/createRegulator", {
+    let response;
+    try {response = await fetch("http://localhost:5090/api/Regulator/createRegulator", {
       method: "POST",
       body: JSON.stringify({
         Username: email,
@@ -43,6 +44,14 @@ export default function Register() {
         "Content-Type": "application/json",
       },
     });
+  } catch (err) {
+    console.error('Network error:', err);
+    return
+  }
+  if (!response.ok){
+    console.error('Response error:', response.status);
+    return;
+  }
     const data = await response.json();
     return data;
   };

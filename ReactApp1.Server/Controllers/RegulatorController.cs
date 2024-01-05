@@ -32,6 +32,7 @@ namespace ReactApp1
             catch (Exception ex)
             {
                 // Log the exception for debugging purposes
+                Console.WriteLine("Exception message: " + ex.Message);
                 return StatusCode(500, new { Success = false, Message = "Internal server error." });
             }
         }

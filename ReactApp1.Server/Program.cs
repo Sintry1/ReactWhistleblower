@@ -28,9 +28,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseRouting();
-
 app.UseCors("AllowMyOrigin");
+
+app.UseRouting();
 
 app.UseAuthorization();
 
