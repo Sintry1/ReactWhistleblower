@@ -13,14 +13,21 @@ namespace ReactApp1
             {
                 // Calls the GetPublicKey prepared statement and gets the byte array
                 byte[] serializedPublicKey = ps.GetPublicKey(industryName);
-                Console.WriteLine("Got public key from the database.");
+                Console.WriteLine($"Got public key from the database.: {serializedPublicKey}");
 
                 // Calls DeserializeRSAParameters, to turn the byte array back into an RSAParameter
                 RSAParameters publicKey = Security.DeserializeRSAParameters(serializedPublicKey);
                 Console.WriteLine("Deserialized public key.");
+                Console.WriteLine($"Deserialized public key: {publicKey}");
+                Console.WriteLine($"  Modulus: {BitConverter.ToString(publicKey.Modulus)}");
+                Console.WriteLine($"  Exponent: {BitConverter.ToString(publicKey.Exponent)}");
 
                 // Encrypts each field with the RSAParameter
+                Console.WriteLine($"encrypting companyName: {companyName}");
                 string encryptedCompanyName = security.Encrypt(companyName, publicKey);
+                Console.WriteLine($"companyName encrypting: {encryptedCompanyName}");
+
+                Console.WriteLine($"encrypting description: {description}");
                 string encryptedDescription = security.Encrypt(description, publicKey);
                 string encryptedEmail = security.Encrypt(email, publicKey);
                 Console.WriteLine("Encrypted report fields.");

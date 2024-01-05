@@ -226,7 +226,6 @@ namespace ReactApp1
         {
             try
             {
-            
                 // Set credentials for the user needed
                 dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
                 Console.WriteLine("Usernname for DB inside GetIndustryID: " + DotNetEnv.Env.GetString("OTHER_READER_NAME") + ", password for db: " + DotNetEnv.Env.GetString("OTHER_READER_PASSWORD"));
@@ -260,11 +259,12 @@ namespace ReactApp1
                         Console.WriteLine($"Got industry_id: {industryId}");
 
                         return industryId;
-                    }catch (InvalidOperationException ex)
-{
-    Console.WriteLine($"Error preparing command: {ex.Message}");
-    throw;
-}
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Console.WriteLine($"Error preparing command: {ex.Message}");
+                        throw;
+                        }
                     catch (MySqlException ex)
                     {
                         // Handle the exception (e.g., log it) and rethrow
@@ -305,17 +305,16 @@ namespace ReactApp1
 
             try
             {
+
+                // Set credentials for the user needed
+                dbConnection.SetConnectionCredentials(Env.GetString("REPORT_WRITER_NAME"), Env.GetString("REPORT_WRITER_PASSWORD"));
+                Console.WriteLine("Connection opened successfully.");
                 // Use mySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
-                    // Set credentials for the user needed
-                    dbConnection.SetConnectionCredentials(Env.GetString("REPORT_WRITER_NAME"), Env.GetString("REPORT_WRITER_PASSWORD"));
-                    Console.WriteLine("Connection opened successfully.");
 
                     try
                     {
-
-
                         // Create an instance of MySqlCommand
                         MySqlCommand command = new MySqlCommand(null, connection);
 
@@ -482,11 +481,12 @@ namespace ReactApp1
                         command.Prepare();
 
                         // Execute the query and cast the result to a byte array
-                        object result = command.ExecuteScalar();
+                        byte[] result = command.ExecuteScalar() as byte[];
                         Console.WriteLine("Query executed successfully.");
+                        Console.WriteLine($"Got key: {BitConverter.ToString(result)}");
 
                         // Return the byte array
-                        return result as byte[];
+                        return result;
                     }
                     catch (MySqlException ex)
                     {

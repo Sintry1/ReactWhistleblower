@@ -5,57 +5,62 @@ namespace ReactApp1
 {
     public class Security
     {
-        //creates instance of PreparedStatements for calling prepared statements from the PreparedStatements class
+        // creates instance of PreparedStatements for calling prepared statements from the PreparedStatements class
         private PreparedStatements ps = PreparedStatements.CreateInstance();
 
-        /*Takes username, password and industry ID
+        /* Takes username, password and industry ID
          * Encrypts password using Bcrypt
          * calls a function that generates a public/private key pair for the regulator
-         * serializes them into bytes, so they can be stored.
+         * serializes them into bytes so they can be stored.
          * calls a function that derives an encryption key
          * encrypts the private key with the derived key
          * Sends all of it to StoreRegulatorInformation, which then saves it in the database.
          */
         public void CreateRegulator(string userName, string hashedPassword, string industryName)
         {
-            //Calls HashPassword with the password and sets the hashed password to the value returned
-            //this hashedpassword is saved with other regulator information
-            //var hashedPassword = HashPassword(password);
+            // Calls HashPassword with the password and sets the hashed password to the value returned
+            // this hashedpassword is saved with other regulator information
+            // var hashedPassword = HashPassword(password);
 
             // Generate key pair
             var keyPair = GenerateKeyPair();
             RSAParameters publicKey = keyPair.Item1;
+            Console.WriteLine($"  Modulus: {BitConverter.ToString(publicKey.Modulus)}");
+            Console.WriteLine($"  Exponent: {BitConverter.ToString(publicKey.Exponent)}");
+
             RSAParameters privateKey = keyPair.Item2;
 
             // Serialize RSA parameters
             byte[] serializedPublicKey = SerializeRSAParameters(publicKey);
+            Console.WriteLine($"key serialized {BitConverter.ToString(serializedPublicKey)}");
+
             byte[] serializedPrivateKey = SerializeRSAParameters(privateKey);
 
-            //gets a byte array as encryption key, using the called function
+            // gets a byte array as encryption key, using the called function
             byte[] encryptionkey = KeyDeriverForEncryptionAndDecryptionOfPrivateKey(userName, hashedPassword);
 
             byte[] encryptedPrivateKey = EncryptKey(serializedPrivateKey, encryptionkey);
 
-            //stores username and password in DB, this can be removed, if we are using other services for login
+            // stores username and password in DB, this can be removed if we are using other services for login
             ps.StoreRegulatorInformation(userName, hashedPassword, serializedPublicKey, encryptedPrivateKey, industryName);
         }
 
         /*
-        //Function for hashing password using bcrypt
-        private string HashPassword(string password)
-        {
-            string salt;
+       //Function for hashing password using bcrypt
+       private string HashPassword(string password)
+       {
+           string salt;
 
-            //generates a salt with a work factor of 16
-            salt = BCrypt.Net.BCrypt.GenerateSalt(16);
+           //generates a salt with a work factor of 16
+           salt = BCrypt.Net.BCrypt.GenerateSalt(16);
 
-            //hashes the password
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password, salt);
-            return hashedPassword;
-        }
-        */
+           //hashes the password
+           var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password, salt);
+           return hashedPassword;
+       }
+       */
 
-        //Function for calling the preparedStatement and returning true if user exists
+        // Function for calling the preparedStatement and returning true if user exists
         public bool UserExists(string userName)
         {
             if (ps.ExistingUser(userName))
@@ -65,7 +70,9 @@ namespace ReactApp1
             return false;
         }
 
-        //Function for calling the preparedStatement and returning the hashedPassword
+
+
+        // Function for calling the preparedStatement and returning the hashedPassword
         public string UserPassword(string userName)
         {
             return ps.GetHashedPassword(userName);
@@ -89,13 +96,14 @@ namespace ReactApp1
             return false;
         }*/
 
-        //Function for deriving a key from username and password
+        
+        // Function for deriving a key from username and password
         private byte[] KeyDeriverForEncryptionAndDecryptionOfPrivateKey(string userName, string password)
         {
             // Sets a combinedSecret of password and username
             string combinedSecret = password + userName;
 
-            //Generates a Salt using the password
+            // Generates a Salt using the password
             byte[] deterministicSalt = Encoding.UTF8.GetBytes(userName);
 
             // Derive a consistent user-specific key from combinedSecret using Rfc2898DeriveBytes
@@ -172,7 +180,7 @@ namespace ReactApp1
             }
         }
 
-        //Generates a key pair for the regulator and returns them as byte arrays
+        // Generates a key pair for the regulator and returns them as byte arrays
         public static Tuple<RSAParameters, RSAParameters> GenerateKeyPair()
         {
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
@@ -185,37 +193,47 @@ namespace ReactApp1
             }
         }
 
-        //Serializes the RSA parameters into a byte array for storage
+        // Serializes the RSA parameters into a byte array for storage
         private byte[] SerializeRSAParameters(RSAParameters parameters)
         {
             // Uses System.Text.Json for serialization
-            string jsonString = System.Text.Json.JsonSerializer.Serialize(parameters);
+            string jsonString = System.Text.Json.JsonSerializer.Serialize(new RSAParametersJson
+            {
+                Modulus = parameters.Modulus,
+                Exponent = parameters.Exponent
+            });
             return Encoding.UTF8.GetBytes(jsonString);
         }
 
-        //Deserializes the byte array back into RSAParameter
+        // Deserializes the byte array back into RSAParameter
         public static RSAParameters DeserializeRSAParameters(byte[] serializedParameters)
         {
             // Uses System.Text.Json for deserialization
             string jsonString = Encoding.UTF8.GetString(serializedParameters);
-            return System.Text.Json.JsonSerializer.Deserialize<RSAParameters>(jsonString);
+            return System.Text.Json.JsonSerializer.Deserialize<RSAParametersJson>(jsonString).ToRSAParameters();
         }
 
-        //Encrypts the msg using the publicKey of the regulator with RSA
+        // Encrypts the msg using the publicKey of the regulator with RSA
         public string Encrypt(string msg, RSAParameters publicKey)
         {
+            Console.WriteLine($"message to encrypt: {msg}");
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {
+                Console.WriteLine($"Importing publickey parameters");
                 rsa.ImportParameters(publicKey);
 
+                Console.WriteLine($"Converts string to byte");
                 byte[] plaintextBytes = Encoding.UTF8.GetBytes(msg);
+                Console.WriteLine($"message to encrypt: {plaintextBytes}");
+
+                Console.WriteLine($"encrypting using RSA");
                 byte[] encryptedData = rsa.Encrypt(plaintextBytes, true);
 
                 return Convert.ToBase64String(encryptedData);
             }
         }
 
-        //Decrypts the encrypted message using the private key with RSA
+        // Decrypts the encrypted message using the private key with RSA
         public string Decrypt(string encryptedText, RSAParameters privateKey)
         {
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
