@@ -33,7 +33,7 @@ namespace ReactApp1
                 string encryptedDescription = security.Encrypt(description, publicKey);
                 Console.WriteLine($"encrypted description: {encryptedDescription}");
 
-                string encryptedEmail;
+                string encryptedEmail="";
                 if (!string.IsNullOrEmpty(email))
                 {
                     Console.WriteLine($"encrypting email: {email}");

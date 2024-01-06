@@ -6,7 +6,7 @@
         public string IndustryName { get; set; }
         public string CompanyName { get; set; }
         public string Description { get; set; }
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
         // Constructor for reports
         public Report(string industryName, string companyName, string description, string? email)
