@@ -142,12 +142,17 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let encryptionKey = deriveKey(industry);
-    let encryptedUsername = encryptValue(username, encryptionKey);
+    let encryptionKey = await deriveKey(industry);
+    let encryptedUsername = await encryptValue(username, encryptionKey);
+    let encryptedUsernameString = btoa(
+      String.fromCharCode.apply(null, encryptedUsername.input)
+    );
+
+    console.log(encryptedUsernameString);
 
     try {
       // Check if user exists
-      if (!checkUserExists(encryptedUsername)) {
+      if (!checkUserExists(encryptedUsernameString)) {
         throw new Error("User does not exist");
       }
       // const userExistsResponse = await fetch(

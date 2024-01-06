@@ -102,7 +102,7 @@ export default function Register() {
       iv: iv,
       input: new Uint8Array(cipher),
     };
-  }; 
+  };
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -127,23 +127,24 @@ export default function Register() {
     let encryptedUsernameString = btoa(
       String.fromCharCode.apply(null, encryptedUsername.input)
     );
+    let encryptedUsernameIv = btoa(
+      String.fromCharCode.apply(null, encryptedUsername.iv)
+    );
 
     let response;
     try {
-      response = await fetch(
-        `${host}api/Regulator/createRegulator`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            Username: encryptedUsernameString,
-            HashedPassword: hashedPassword,
-            IndustryName: industry,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      response = await fetch(`${host}api/Regulator/createRegulator`, {
+        method: "POST",
+        body: JSON.stringify({
+          Username: encryptedUsernameString,
+          HashedPassword: hashedPassword,
+          IndustryName: industry,
+          Iv: encryptedUsernameIv,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
     } catch (err) {
       console.error("Network error:", err);
       return;
