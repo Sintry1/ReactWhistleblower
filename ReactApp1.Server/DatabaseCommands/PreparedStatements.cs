@@ -28,45 +28,63 @@ namespace ReactApp1
 
         //This method checks if the user exists in our database, this method may be COMPLETELY obsolete, thanks to firebase
         public bool ExistingUser(string userName)
-{
-    Console.WriteLine("Setting connection credentials...");
-    dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
-
-    Console.WriteLine("Opening connection...");
-    using (MySqlConnection connection = dbConnection.OpenConnection())
-    {
-        try
         {
-            Console.WriteLine("Creating command...");
-            MySqlCommand command = new MySqlCommand(null, connection);
+            Console.WriteLine("Setting connection credentials...");
+            dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
 
-            Console.WriteLine("Preparing SQL statement...");
-            command.CommandText =
-                $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE regulator_name = @userName) THEN 1 ELSE 0 END";
+            Console.WriteLine("Opening connection...");
+            using (MySqlConnection connection = dbConnection.OpenConnection())
+            {
+                try
+                {
+                    Console.WriteLine("Creating command...");
+                    MySqlCommand command = new MySqlCommand(null, connection);
 
-            Console.WriteLine("Setting parameter...");
-            MySqlParameter userNameParam = new MySqlParameter("userName", userName);
+                    Console.WriteLine("Preparing SQL statement for checking user exists");
+                    command.CommandText =
+                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE regulator_name = @userName) THEN 1 ELSE 0 END";
 
-            Console.WriteLine("Adding parameter to command...");
-            command.Parameters.Add(userNameParam);
+                    Console.WriteLine("Setting parameter for user exists");
+                    Console.WriteLine($"username being set to {userName}");
+                    MySqlParameter userNameParam = new MySqlParameter("@userName", userName);
 
-            Console.WriteLine("Preparing command...");
-            command.Prepare();
+                    Console.WriteLine("Adding parameter to command  for user exists");
+                    command.Parameters.Add(userNameParam);
 
-            Console.WriteLine("Executing query...");
-            bool userExists = (int)command.ExecuteScalar() == 1;
+                    Console.WriteLine("Preparing command for user exists");
+                    command.Prepare();
 
-            Console.WriteLine("Query executed. User exists: " + userExists);
-            return userExists;
+                    Console.WriteLine($"Executing query for user exists with parameter value: {userName}");
+
+                    // Debug: Print out the actual SQL query with parameter values
+                    Console.WriteLine($"SQL Query: {command.CommandText}");
+                    Console.WriteLine($"Parameter Values: {userNameParam.Value}");
+
+                    // Execute the query and cast the result to a long
+                    long result = (long)command.ExecuteScalar();
+
+                    Console.WriteLine($"int64 value: {result}");
+
+                    // Convert the long result to boolean
+                    bool userExists = result == 1;
+
+                    Console.WriteLine("Query executed. User exists: " + userExists);
+                    return userExists;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error executing query: {ex.Message}");
+                    return false;
+
+                }
+                finally
+                {
+                    Console.WriteLine("Closing connection...");
+                    dbConnection.CloseConnection();
+                    Console.WriteLine("Connection closed.");
+                }
+            }
         }
-        finally
-        {
-            Console.WriteLine("Closing connection...");
-            dbConnection.CloseConnection();
-            Console.WriteLine("Connection closed.");
-        }
-    }
-}
 
         //Stores username and the hashedPassword, this method may be COMPLETELY obsolete, thanks to firebase
         public void StoreRegulatorInformation(string userName, string hash, byte[] publicKey, byte[] encryptedPrivateKey, string industryName)
@@ -513,8 +531,11 @@ namespace ReactApp1
                     // Call Prepare after setting the Commandtext and Parameters.
                     command.Prepare();
 
-                    // Execute the query and cast the result to a boolean
-                    bool entryExists = (int)command.ExecuteScalar() == 1;
+                    // Execute the query and cast the result to a long
+                    long result = (long)command.ExecuteScalar();
+
+                    // Convert the long result to boolean
+                    bool entryExists = result == 1;
 
                     //returns true after everything is done.
                     return entryExists;
