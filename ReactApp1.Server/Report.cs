@@ -7,14 +7,19 @@
         public string CompanyName { get; set; }
         public string Description { get; set; }
         public string Email { get; set; }
+        public string CompanyIv { get; set; }
+        public string DescriptionIv { get; set; }
+
 
         // Constructor for reports
-        public Report(string industryName, string companyName, string description, string? email)
+        public Report(string industryName, string companyName, string companyIv, string description, string descriptionIv, string email)
         {
             ReportID = null;
             IndustryName = industryName;
             CompanyName = companyName;
+            CompanyIv = companyIv;
             Description = description;
+            DescriptionIv = descriptionIv;
             Email = email;
         }
     }

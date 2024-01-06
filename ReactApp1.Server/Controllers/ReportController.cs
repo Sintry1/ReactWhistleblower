@@ -24,8 +24,10 @@ namespace ReactApp1
                 string companyName = reportRequest.CompanyName;
                 string description = reportRequest.Description;
                 string email = reportRequest.Email;
+                string companyIv = reportRequest.CompanyIv;
+                string descriptionIv = reportRequest.DescriptionIv;
 
-                bool result = userFunctionality.SendReport(industryName, companyName, description, email);
+                bool result = userFunctionality.SendReport(industryName, companyName, companyIv, description, descriptionIv, email);
 
                 if (result)
                 {

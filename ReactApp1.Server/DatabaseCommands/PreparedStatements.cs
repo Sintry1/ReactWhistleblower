@@ -114,24 +114,24 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"INSERT INTO regulators (regulator_name, password, public_key, private_key, industry_id, iv) VALUES (@userName, @hash, @publicKey, @privateKey, @industry_id, @iv)";
+                        $"INSERT INTO regulators (regulator_name, password,iv ,public_key, private_key, industry_id) VALUES (@userName, @hash,  @iv, @publicKey, @privateKey, @industry_id)";
 
                     // Sets a mySQL parameter for the prepared statement
                     MySqlParameter userNameParam = new MySqlParameter("userName", userName);
                     MySqlParameter hashParam = new MySqlParameter("hash", hash);
+                    MySqlParameter ivParam = new MySqlParameter("iv", iv);
                     MySqlParameter publicKeyParam = new MySqlParameter("publicKey", publicKey);
                     MySqlParameter privateKeyParam = new MySqlParameter("privateKey",encryptedPrivateKey);
                     MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
-                    MySqlParameter ivParam = new MySqlParameter("iv", iv);
 
 
                     // Adds the parameter to the command
                     command.Parameters.Add(userNameParam);
                     command.Parameters.Add(hashParam);
+                    command.Parameters.Add(ivParam);
                     command.Parameters.Add(publicKeyParam);
                     command.Parameters.Add(privateKeyParam);
                     command.Parameters.Add(industryIDParam);
-                    command.Parameters.Add(ivParam);
 
                     // Call Prepare after setting the Commandtext and Parameters.
                     command.Prepare();
@@ -331,7 +331,7 @@ namespace ReactApp1
 
                         // Create and prepare an SQL statement.
                         command.CommandText =
-                            $"INSERT INTO reports (industry_id, company_name, description, email) VALUES (@industry_id, @company_name, @description, @email)";
+                            $"INSERT INTO reports (industry_id, company_name, company_iv, description, desc_iv, email) VALUES (@industry_id, @company_name, @company_iv, @description, desc_iv, @email)";
 
                         // Sets mySQL parameters for the prepared statement
                         MySqlParameter industryIDParam = new MySqlParameter(
@@ -342,9 +342,17 @@ namespace ReactApp1
                             "company_name",
                             report.CompanyName
                         );
-                        MySqlParameter msgParam = new MySqlParameter(
+                        MySqlParameter companyIvParam = new MySqlParameter(
+                            "company_iv",
+                            report.CompanyIv
+                        ) ;
+                        MySqlParameter descriptionParam = new MySqlParameter(
                             "description",
                             report.Description
+                        );
+                        MySqlParameter descIvParam = new MySqlParameter(
+                            "desc_iv",
+                            report.DescriptionIv
                         );
 
                         // Check if email is null, and set the parameter accordingly
@@ -361,7 +369,9 @@ namespace ReactApp1
                         // Adds the parameters to the command
                         command.Parameters.Add(industryIDParam);
                         command.Parameters.Add(companyNameParam);
-                        command.Parameters.Add(msgParam);
+                        command.Parameters.Add(companyIvParam);
+                        command.Parameters.Add(descriptionParam);
+                        command.Parameters.Add(descIvParam);
                         command.Parameters.Add(emailParam);
 
                         // Call Prepare after setting the Commandtext and Parameters.
@@ -438,13 +448,17 @@ namespace ReactApp1
                             // Read data from the database and create a Report object
                             int reportID = reader.GetInt32("report_id");
                             string companyName = reader.GetString("company_name");
+                            string companyIv = reader.GetString("company_iv");
                             string description = reader.GetString("description");
+                            string descIv = reader.GetString("desc_iv");
                             string email = reader.IsDBNull(reader.GetOrdinal("email")) ? null: reader.GetString("email");
 
                             Report report = new Report(
                                 industryName,
                                 companyName,
+                                companyIv,
                                 description,
+                                descIv,
                                 email
                             );
                             reports.Add(report);

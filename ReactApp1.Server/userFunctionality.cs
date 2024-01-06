@@ -9,7 +9,7 @@ namespace ReactApp1
         private PreparedStatements ps = PreparedStatements.CreateInstance();
         private Security security = new Security();
 
-        public bool SendReport(string industryName, string companyName, string description, string email)
+        public bool SendReport(string industryName, string companyName, string description, string email, string companyIv, string descriptionIv)
         {
             try
             {
@@ -41,7 +41,7 @@ namespace ReactApp1
                     Console.WriteLine($"encrypted email: {encryptedEmail}");
                 }
 
-                Report reportToSend = new Report(industryName, encryptedCompanyName, encryptedDescription, encryptedEmail);
+                Report reportToSend = new Report(industryName, encryptedCompanyName, companyIv, encryptedDescription, descriptionIv, encryptedEmail);
 
                 // Sends the information to StoreReport and returns true if successful
                 if (ps.StoreReport(reportToSend))
@@ -124,7 +124,7 @@ namespace ReactApp1
 
                         Console.WriteLine($"creating decrypted report");
                         //Creates report object with the decrypted parameters
-                        Report decryptedReport = new Report(industryName, decryptedCompanyName, decryptedDescription, decryptedEmail);
+                        Report decryptedReport = new Report(industryName, decryptedCompanyName,encryptedReport.CompanyIv, decryptedDescription,encryptedReport.DescriptionIv, decryptedEmail);
 
                         Console.WriteLine($"Adding to decrypted report list");
                         //Adds the decrypted report to the decrypted report LIST
