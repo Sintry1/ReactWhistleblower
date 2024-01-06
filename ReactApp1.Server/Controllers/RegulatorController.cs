@@ -76,7 +76,7 @@ namespace ReactApp1
             {
                 bool exists = security.IndustryMatch(userName, industryName);
 
-                return Ok(new { Success = true, UserExists = exists });
+                return Ok(new { Success = true, IndustryMatch = exists });
             }
             catch (Exception ex)
             {
