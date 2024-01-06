@@ -602,7 +602,7 @@ namespace ReactApp1
             }
         }
 
-        public string FindIvFromIndustryName(string industryName)
+        public string FindRegulatorIvFromIndustryName(string industryName)
         {
             //Calls another prepared statement to get the industry ID from the industry name
             int industryId = GetIndustryID(industryName);
@@ -648,6 +648,64 @@ namespace ReactApp1
 
                     //returns the iv
                     return iv;
+                }
+                //executes at the end, no matter if it returned a value before or not
+                finally
+                {
+                    //closes the connection at the VERY end
+                    dbConnection.CloseConnection();
+                }
+            }
+        }
+
+        //prepared statement for finding report related ivs
+        public (string, string) FindReportIvsFromIndustryName(string industryName)
+        {
+            //Calls another prepared statement to get the industry ID from the industry name
+            int industryId = GetIndustryID(industryName);
+
+            //Set credentials for the user needed
+            dbConnection.SetConnectionCredentials(
+                Env.GetString("OTHER_READER_NAME"),
+                Env.GetString("OTHER_READER_PASSWORD")
+            );
+
+            //uses mySqlConnection to open the connection and throws an exception if it fails
+            using (MySqlConnection connection = dbConnection.OpenConnection())
+            {
+                try
+                {
+                    string companyIv = "";
+                    string descIv="";
+                    //creates an instance of MySqlCommand, a method in the mysql library
+                    MySqlCommand command = new MySqlCommand(null, connection);
+
+                    // Create and prepare an SQL statement.
+                    command.CommandText =
+                        $"SELECT iv FROM regulators WHERE industry_id = @industry_id";
+
+                    // Sets MySQL parameters for the prepared statement
+                    MySqlParameter industryIdParam = new MySqlParameter("industry_id", industryId);
+
+                    // Adds the parameters to the command
+                    command.Parameters.Add(industryIdParam);
+
+                    // Call Prepare after setting the Commandtext and Parameters.
+                    command.Prepare();
+
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        // Check if there are rows in the result
+                        if (reader.Read())
+                        {
+                            // Retrieve the "company_iv" and "desc_iv" column values as strings
+                            companyIv = reader["company_iv"].ToString();
+                            descIv = reader["desc_iv"].ToString();
+                        }
+                    }
+
+                    // Returns the company_iv and desc_iv as a tuple
+                    return (companyIv, descIv);
                 }
                 //executes at the end, no matter if it returned a value before or not
                 finally

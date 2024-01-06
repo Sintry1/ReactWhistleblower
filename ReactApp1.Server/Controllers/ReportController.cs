@@ -8,11 +8,16 @@ namespace ReactApp1
     public class ReportController : ControllerBase
     {
         private readonly UserFunctionality userFunctionality;
+        private readonly Security security;
 
+        
         public ReportController()
         {
             // Instantiate the UserFunctionality class when creating the controller
             this.userFunctionality = new UserFunctionality();
+
+            // Instantiate the Security class when creating the controller
+            this.security = new Security();
         }
 
         [HttpPost("sendReport")]
@@ -53,6 +58,24 @@ namespace ReactApp1
                 List<Report> reports = userFunctionality.RetrieveReports(industryName, userName);
 
                 return Ok(new { Success = true, Reports = reports });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging purposes
+                return StatusCode(500, new { Success = false, Message = "Internal server error." });
+            }
+        }
+
+        [HttpGet("GetReportIvs/{industryName}")]
+        public IActionResult FindReportIvsFromIndustryName(string industryName)
+        {
+            try
+            {
+                // Modify the method to return a tuple of two strings
+                (string companyIv, string descIv) = security.FindReportIvsFromIndustryName(industryName);
+
+                // Return a response with both strings
+                return Ok(new { Success = true, CompanyIv = companyIv, DescIv = descIv });
             }
             catch (Exception ex)
             {
