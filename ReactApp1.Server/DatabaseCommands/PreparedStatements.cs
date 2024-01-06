@@ -682,7 +682,7 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"SELECT iv FROM regulators WHERE industry_id = @industry_id";
+                        $"SELECT company_iv, desc_iv FROM reports WHERE industry_id = @industry_id";
 
                     // Sets MySQL parameters for the prepared statement
                     MySqlParameter industryIdParam = new MySqlParameter("industry_id", industryId);
