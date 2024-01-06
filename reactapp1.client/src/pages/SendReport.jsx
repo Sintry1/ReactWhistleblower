@@ -110,6 +110,21 @@ export default function SendReport() {
       String.fromCharCode.apply(null, ecnryptedCompany.input)
     );
 
+    if (industry === ""){
+      alert("Please select an industry");
+      return;
+    }
+
+    if (companyName === ""){
+      alert("Please enter a company name");
+      return;
+    }
+
+    if (reportDetails === ""){
+      alert("Please enter a report description");
+      return;
+    }
+
     // Send report using Axios
     await fetch(`${host}api/Report/sendReport`, {
       method: "POST",
@@ -137,6 +152,9 @@ export default function SendReport() {
             className="dropdown"
             onChange={(e) => setIndustry(e.target.value)}
           >
+            <option value="">
+              Select Industry
+            </option>
             <option value="Information Technology">
               Information Technology
             </option>

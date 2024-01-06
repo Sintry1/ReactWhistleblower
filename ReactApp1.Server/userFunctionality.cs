@@ -65,7 +65,7 @@ namespace ReactApp1
         }
 
 
-        public List<Report> RetrieveReports(string industryName,string userName)
+        public List<Report> RetrieveReports(string industryName, string userName)
         {
             try
             {
