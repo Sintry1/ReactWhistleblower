@@ -24,8 +24,9 @@ namespace ReactApp1
                 string userName = regulator.UserName;
                 string hashedPassword = regulator.HashedPassword;
                 string industryName = regulator.IndustryName;
+                string iv = regulator.Iv;
 
-                security.CreateRegulator(userName, hashedPassword, industryName);
+                security.CreateRegulator(userName, hashedPassword, industryName, iv);
 
                 return Ok(new { Success = true, Message = "Regulator created successfully." });
             }
@@ -84,13 +85,21 @@ namespace ReactApp1
                 return StatusCode(500, new { Success = false, Message = "Internal server error." });
             }
         }
-    }
 
-    public class RegulatorRequest
-    {
-        public string UserName { get; set; }
-        public string HashedPassword { get; set; }
-        public string Password { get; set; }
-        public string IndustryName { get; set; }
+        [HttpGet("GetIv/{industryName}")]
+        public IActionResult FindIvFromIndustryName(string industryName)
+        {
+            try
+            {
+                string iv = security.FindIvFromIndustryName(industryName);
+
+                return Ok(new { Success = true, Iv = iv });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging purposes
+                return StatusCode(500, new { Success = false, Message = "Internal server error." });
+            }
+        }
     }
 }

@@ -16,7 +16,7 @@ namespace ReactApp1
          * encrypts the private key with the derived key
          * Sends all of it to StoreRegulatorInformation, which then saves it in the database.
          */
-        public void CreateRegulator(string userName, string hashedPassword, string industryName)
+        public void CreateRegulator(string userName, string hashedPassword, string industryName, string iv)
         {
             // Calls HashPassword with the password and sets the hashed password to the value returned
             // this hashedpassword is saved with other regulator information
@@ -39,10 +39,10 @@ namespace ReactApp1
             // gets a byte array as encryption key, using the called function
             byte[] encryptionkey = KeyDeriverForEncryptionAndDecryptionOfPrivateKey(userName, hashedPassword);
 
-            byte[] encryptedPrivateKey = EncryptKey(serializedPrivateKey, encryptionkey);
+            byte[] encryptedSerializedPrivateKey = EncryptKey(serializedPrivateKey, encryptionkey);
 
             // stores username and password in DB, this can be removed if we are using other services for login
-            ps.StoreRegulatorInformation(userName, hashedPassword, serializedPublicKey, encryptedPrivateKey, industryName);
+            ps.StoreRegulatorInformation(userName, hashedPassword, serializedPublicKey, encryptedSerializedPrivateKey, industryName, iv);
         }
 
         /*
@@ -254,6 +254,19 @@ namespace ReactApp1
                 byte[] decryptedBytes = rsa.Decrypt(encryptedData, true);
 
                 return Encoding.UTF8.GetString(decryptedBytes);
+            }
+        }
+
+        //Checks if industry matches the industry belonging to the user
+        public string FindIvFromIndustryName(string industryName)
+        {
+            try
+            {
+                return ps.FindIvFromIndustryName(industryName);
+
+            } catch (Exception e)
+            {
+                throw e;
             }
         }
     }
