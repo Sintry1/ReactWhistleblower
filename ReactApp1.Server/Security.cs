@@ -258,7 +258,7 @@ namespace ReactApp1
         }
 
         //Checks if industry matches the industry belonging to the user
-        public string FindRegulatorIvFromIndustryName(string industryName)
+        public (string, string) FindRegulatorIvFromIndustryName(string industryName)
         {
             try
             {
