@@ -106,8 +106,14 @@ export default function SendReport() {
     let encryptedReportString = btoa(
       String.fromCharCode.apply(null, encryptedReport.input)
     );
-    let ecnryptedCompanyString = btoa(
+    let encryptedReportIv = btoa(
+      String.fromCharCode.apply(null, encryptedReport.iv)
+    );
+    let encryptedCompanyString = btoa(
       String.fromCharCode.apply(null, ecnryptedCompany.input)
+    );
+    let encryptedCompanyIv = btoa(
+      String.fromCharCode.apply(null, ecnryptedCompany.iv)
     );
 
     if (industry === ""){
@@ -131,8 +137,10 @@ export default function SendReport() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         IndustryName: industry,
-        CompanyName: ecnryptedCompanyString,
+        CompanyName: encryptedCompanyString,
+        CompanyIv: encryptedCompanyIv,
         Description: encryptedReportString,
+        DescriptionIv: encryptedReportIv,
         Email: email,
       }),
     })

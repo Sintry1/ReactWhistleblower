@@ -121,15 +121,19 @@ export default function Register() {
   };
 
   const registerRegulator = async (email, password, industry) => {
+    console.log(`IV for: ${email}`, );
     const hashedPassword = hashPassword(password);
     let encryptionKey = await deriveKey(industry);
     let encryptedUsername = await encryptValue(email, encryptionKey);
+    console.log(`IV for: ${email}`, encryptedUsername.iv);
+    console.log(`Encrypted username for: ${email}`, encryptedUsername.input);
     let encryptedUsernameString = btoa(
       String.fromCharCode.apply(null, encryptedUsername.input)
     );
     let encryptedUsernameIv = btoa(
       String.fromCharCode.apply(null, encryptedUsername.iv)
     );
+    console.log("String representation of Username: ", encryptedUsernameString);
 
     let response;
     try {

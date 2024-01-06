@@ -22,10 +22,11 @@ namespace ReactApp1
             {
                 string industryName = reportRequest.IndustryName;
                 string companyName = reportRequest.CompanyName;
-                string description = reportRequest.Description;
-                string email = reportRequest.Email;
                 string companyIv = reportRequest.CompanyIv;
+                string description = reportRequest.Description;
                 string descriptionIv = reportRequest.DescriptionIv;
+                string email = reportRequest.Email;
+                
 
                 bool result = userFunctionality.SendReport(industryName, companyName, companyIv, description, descriptionIv, email);
 

@@ -7,8 +7,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [industry, setIndustry] = useState("");
 
-
-
   const host = "http://localhost:5090/";
 
   const checkPassword = async (name, password) => {
@@ -140,19 +138,67 @@ export default function Login() {
     };
   };
 
+  const decryptValue = async (encryption, decryptionKey) => {
+    try {
+      const keyMaterial = await crypto.subtle.exportKey("raw", decryptionKey);
+
+      const key = await crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: new TextEncoder().encode(localStorage.getItem("Salt")),
+          iterations: 100000,
+          hash: { name: "SHA-256" },
+        },
+        await crypto.subtle.importKey(
+          "raw",
+          keyMaterial,
+          { name: "PBKDF2" },
+          false,
+          ["deriveKey"]
+        ),
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt", "decrypt"]
+      );
+
+      const iv = new Uint8Array(encryption.iv);
+      const encryptedUsername = new Uint8Array(encryption.username);
+
+      const decryptedUsernameBuffer = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        encryptedUsername
+      );
+
+      // Convert the decrypted password ArrayBuffer to a string
+      const decryptedUsernameString = new TextDecoder().decode(
+        decryptedUsernameBuffer
+      );
+
+      return decryptedUsernameString;
+    } catch (error) {
+      console.error("Error during decryption:", error);
+      throw error;
+    }
+  };
+
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     let encryptionKey = await deriveKey(industry);
-    let encryptedUsername = await encryptValue(username, encryptionKey);
+      
+    let encryptedUsername = await encryptForCompare(username, encryptionKey);
+  
     let encryptedUsernameString = btoa(
       String.fromCharCode.apply(null, encryptedUsername.input)
     );
 
-    console.log(encryptedUsernameString);
+    console.log("Ecnrypted Username: ", encryptedUsernameString);
 
     try {
       // Check if user exists
-      if (!checkUserExists(encryptedUsernameString)) {
+      if (!checkUserExists(encryptedUsername)) {
         throw new Error("User does not exist");
       }
       // const userExistsResponse = await fetch(
@@ -161,7 +207,6 @@ export default function Login() {
       // if (!userExistsResponse.data.UserExists) {
       //   throw new Error("User does not exist");
       // }
-
       // Check if industry matches
       // const industryMatchesResponse = await axios.get(
       //   `${host}api/Regulator/checkIndustry/${username}/${industry}`
@@ -169,14 +214,12 @@ export default function Login() {
       // if (!industryMatchesResponse.data.IndustryMatches) {
       //   throw new Error("Industry does not match");
       // }
-
       // Check if password matches
       // Assuming you have an endpoint for this
       // const passwordMatchesResponse = await checkPassword(username, password);
       // if (!passwordMatchesResponse) {
       //   throw new Error("Password does not match");
       // }
-
       // Check is user exists
       // if user exists, check industry matches
       // if industry matches, check password
@@ -212,10 +255,7 @@ export default function Login() {
             onChange={handlePasswordChange}
           />
         </div>
-        <select
-          id="industry"
-          onChange={(e) => setIndustry(e.target.value)}
-        >
+        <select id="industry" onChange={(e) => setIndustry(e.target.value)}>
           <option value="">Select Industry</option>
           <option value="Information Technology">Information Technology</option>
           <option value="Financial Services">Financial Services</option>
@@ -224,9 +264,7 @@ export default function Login() {
           <option value="Leisure">Leisure</option>
           <option value="Hospitality">Hospitality</option>
         </select>
-        <button type="submit">
-          {/* <Link to="/reports">Login</Link> */}
-        </button>
+        <button type="submit">{/* <Link to="/reports">Login</Link> */}</button>
       </form>
       <button>
         <Link to="/register">Register</Link>
