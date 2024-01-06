@@ -137,14 +137,14 @@ namespace ReactApp1
                 else
                 {
                     // Return an empty list if there are no encrypted reports
-                    throw new Exception("List is 0 or smaller");
+                    throw new Exception("List is 0/empty");
                 }
             }
             catch (Exception ex)
             {
                 // Handle the exception (e.g., log it) and return an empty list or null
                 // You may want to implement secure logging to store the error message
-                return new List<Report>();
+                throw ex;
             }
         }
     }
