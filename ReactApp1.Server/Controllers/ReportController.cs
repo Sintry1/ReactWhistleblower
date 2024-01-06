@@ -43,8 +43,8 @@ namespace ReactApp1
             }
         }
 
-        [HttpGet("retrieveReports/{industryName}/{userName}")]
-        public IActionResult RetrieveReports(string industryName, string userName)
+        [HttpGet("retrieveReports")]
+        public IActionResult RetrieveReports([FromBody] string industryName, string userName)
         {
             try
             {
