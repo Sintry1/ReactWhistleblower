@@ -106,7 +106,7 @@ namespace ReactApp1
             return false;
         }*/
 
-        
+
         // Function for deriving a key from username and password
         public byte[] KeyDeriverForEncryptionAndDecryptionOfPrivateKey(string userName, string password)
         {
@@ -258,11 +258,11 @@ namespace ReactApp1
         }
 
         //Checks if industry matches the industry belonging to the user
-        public string FindIvFromIndustryName(string industryName)
+        public (string, string) FindRegulatorIvFromIndustryName(string industryName)
         {
             try
             {
-                return ps.FindIvFromIndustryName(industryName);
+                return ps.FindRegulatorIvFromIndustryName(industryName);
 
             } catch (Exception e)
             {

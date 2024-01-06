@@ -8,11 +8,16 @@ namespace ReactApp1
     public class ReportController : ControllerBase
     {
         private readonly UserFunctionality userFunctionality;
+        private readonly Security security;
 
+        
         public ReportController()
         {
             // Instantiate the UserFunctionality class when creating the controller
             this.userFunctionality = new UserFunctionality();
+
+            // Instantiate the Security class when creating the controller
+            this.security = new Security();
         }
 
         [HttpPost("sendReport")]

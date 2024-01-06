@@ -86,12 +86,12 @@ namespace ReactApp1
             }
         }
 
-        [HttpGet("GetIv/{industryName}")]
-        public IActionResult FindIvFromIndustryName(string industryName)
+        [HttpGet("GetIvAndUserName/{industryName}")]
+        public IActionResult FindIvFromRegulatorIndustryName(string industryName)
         {
             try
             {
-                string iv = security.FindIvFromIndustryName(industryName);
+                (string,string) iv = security.FindRegulatorIvFromIndustryName(industryName);
 
                 return Ok(new { Success = true, Iv = iv });
             }

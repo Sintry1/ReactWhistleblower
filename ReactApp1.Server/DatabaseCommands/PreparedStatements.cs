@@ -1,4 +1,5 @@
 ﻿using DotNetEnv;
+using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using System.Reflection.PortableExecutable;
 
@@ -92,7 +93,7 @@ namespace ReactApp1
             byte[] publicKey,
             byte[] encryptedPrivateKey,
             string industryName,
-            string iv 
+            string iv
         )
         {
             //Calls another prepared statement to get the industry ID from the industry name
@@ -121,7 +122,7 @@ namespace ReactApp1
                     MySqlParameter hashParam = new MySqlParameter("hash", hash);
                     MySqlParameter ivParam = new MySqlParameter("iv", iv);
                     MySqlParameter publicKeyParam = new MySqlParameter("publicKey", publicKey);
-                    MySqlParameter privateKeyParam = new MySqlParameter("privateKey",encryptedPrivateKey);
+                    MySqlParameter privateKeyParam = new MySqlParameter("privateKey", encryptedPrivateKey);
                     MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
 
 
@@ -345,7 +346,7 @@ namespace ReactApp1
                         MySqlParameter companyIvParam = new MySqlParameter(
                             "company_iv",
                             report.CompanyIv
-                        ) ;
+                        );
                         MySqlParameter descriptionParam = new MySqlParameter(
                             "description",
                             report.Description
@@ -451,7 +452,7 @@ namespace ReactApp1
                             string companyIv = reader.GetString("company_iv");
                             string description = reader.GetString("description");
                             string descIv = reader.GetString("desc_iv");
-                            string email = reader.IsDBNull(reader.GetOrdinal("email")) ? null: reader.GetString("email");
+                            string email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email");
 
                             Report report = new Report(
                                 industryName,
@@ -602,7 +603,7 @@ namespace ReactApp1
             }
         }
 
-        public string FindIvFromIndustryName(string industryName)
+        public (string, string) FindRegulatorIvFromIndustryName(string industryName)
         {
             //Calls another prepared statement to get the industry ID from the industry name
             int industryId = GetIndustryID(industryName);
@@ -618,13 +619,14 @@ namespace ReactApp1
             {
                 try
                 {
-                    string iv="";
+                    string iv = "";
+                    string regulatorName = "";
                     //creates an instance of MySqlCommand, a method in the mysql library
                     MySqlCommand command = new MySqlCommand(null, connection);
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"SELECT iv FROM regulators WHERE industry_id = @industry_id";
+                        $"SELECT iv, regulator_name FROM regulators WHERE industry_id = @industry_id";
 
                     // Sets MySQL parameters for the prepared statement
                     MySqlParameter industryIdParam = new MySqlParameter("industry_id", industryId);
@@ -641,13 +643,15 @@ namespace ReactApp1
                         // Check if there are rows in the result
                         if (reader.Read())
                         {
-                            // Retrieve the "iv" column value as a string
+                            // Retrieve the "iv" and "regulator_name" column values as strings
                             iv = reader["iv"].ToString();
+                            regulatorName = reader["regulator_name"].ToString();
                         }
                     }
 
-                    //returns the iv
-                    return iv;
+                    // Returns the iv and regulator_name as a tuple
+                    return (iv, regulatorName);
+
                 }
                 //executes at the end, no matter if it returned a value before or not
                 finally
@@ -656,6 +660,6 @@ namespace ReactApp1
                     dbConnection.CloseConnection();
                 }
             }
-        }
+        }   
     }
 }
