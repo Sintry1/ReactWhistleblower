@@ -43,12 +43,12 @@ namespace ReactApp1
             }
         }
 
-        [HttpGet("retrieveReports/{industryName}")]
-        public IActionResult RetrieveReports(string industryName)
+        [HttpGet("retrieveReports/{industryName}/{userName}")]
+        public IActionResult RetrieveReports(string industryName, string userName)
         {
             try
             {
-                List<Report> reports = userFunctionality.RetrieveReports(industryName);
+                List<Report> reports = userFunctionality.RetrieveReports(industryName, userName);
 
                 return Ok(new { Success = true, Reports = reports });
             }

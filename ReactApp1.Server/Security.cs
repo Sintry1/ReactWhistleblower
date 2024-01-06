@@ -98,7 +98,7 @@ namespace ReactApp1
 
         
         // Function for deriving a key from username and password
-        private byte[] KeyDeriverForEncryptionAndDecryptionOfPrivateKey(string userName, string password)
+        public byte[] KeyDeriverForEncryptionAndDecryptionOfPrivateKey(string userName, string password)
         {
             // Sets a combinedSecret of password and username
             string combinedSecret = password + userName;

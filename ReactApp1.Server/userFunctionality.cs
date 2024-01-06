@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ReactApp1
 {
@@ -7,6 +8,7 @@ namespace ReactApp1
 
         private PreparedStatements ps = PreparedStatements.CreateInstance();
         private Security security = new Security();
+
         public bool SendReport(string industryName, string companyName, string description, string email)
         {
             try
@@ -56,32 +58,67 @@ namespace ReactApp1
         }
 
 
-        public List<Report> RetrieveReports(string industryName)
+        public List<Report> RetrieveReports(string industryName,string userName)
         {
             try
             {
                 // Retrieve the list of encrypted reports from the database
                 List<Report> encryptedReports = ps.GetAllReportsByIndustryName(industryName);
-
+                Console.WriteLine($"list of encrypted reports: {encryptedReports}");
                 // Check if there are any encrypted reports
                 if (encryptedReports.Count > 0)
                 {
                     // Get the private key for decryption
-                    byte[] serializedPrivateKey = ps.GetPrivateKey(industryName);
+                    Console.WriteLine($"fetching private key");
+                    byte[] encryptedSerializedPrivateKey = ps.GetPrivateKey(industryName);
 
+                    Console.WriteLine($"fetching hashed password");
+                    //Fetches the password for key deriviation
+                    string hashedPassword = ps.GetHashedPassword(userName);
+
+                    Console.WriteLine($"Derives key from username and password");
+                    //Derives key
+                    byte[] derivedKey = security.KeyDeriverForEncryptionAndDecryptionOfPrivateKey(userName,hashedPassword);
+
+                    Console.WriteLine($"decrypts private key using derived key");
+                    //uses derived key to decrypt the encrypted serialized private key
+                    byte[] serializedPrivateKey = Security.DecryptKey(encryptedSerializedPrivateKey, derivedKey);
+                    Console.WriteLine($"Got public key from the database.: {serializedPrivateKey}");
+
+
+                    Console.WriteLine($"deserializes RSA parameters");
+                    //deserializes it
                     RSAParameters privateKey = Security.DeserializeRSAParameters(serializedPrivateKey);
+                    Console.WriteLine($"  Modulus: {BitConverter.ToString(privateKey.Modulus)}");
+                    Console.WriteLine($"  Exponent: {BitConverter.ToString(privateKey.Exponent)}");
 
                     // Create a list to store decrypted reports
                     List<Report> decryptedReports = new List<Report>();
 
                     // Decrypt each encrypted report and add it to the decryptedReports list
+                    Console.WriteLine($"entering decryption loop");
                     foreach (Report encryptedReport in encryptedReports)
                     {
+                        Console.WriteLine($"decrypting company name");
+                        //Decrypts companyName
                         string decryptedCompanyName = security.Decrypt(encryptedReport.CompanyName, privateKey);
+                        Console.WriteLine($"decrypted company name: {decryptedCompanyName}");
+
+                        Console.WriteLine($"decrypting Description");
+                        //Decrypts description
                         string decryptedDescription = security.Decrypt(encryptedReport.Description, privateKey);
+                        Console.WriteLine($"decrypted Description: {decryptedDescription}");
+
+                        Console.WriteLine($"decrypting email if not null");
+                        //Decrypts Email if not null
                         string decryptedEmail = encryptedReport.Email != null ? security.Decrypt(encryptedReport.Email, privateKey) : null;
 
+                        Console.WriteLine($"creating decrypted report");
+                        //Creates report object with the decrypted parameters
                         Report decryptedReport = new Report(industryName, decryptedCompanyName, decryptedDescription, decryptedEmail);
+
+                        Console.WriteLine($"Adding to decrypted report list");
+                        //Adds the decrypted report to the decrypted report LIST
                         decryptedReports.Add(decryptedReport);
                     }
 
