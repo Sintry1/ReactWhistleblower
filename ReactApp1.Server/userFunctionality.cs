@@ -27,12 +27,19 @@ namespace ReactApp1
                 // Encrypts each field with the RSAParameter
                 Console.WriteLine($"encrypting companyName: {companyName}");
                 string encryptedCompanyName = security.Encrypt(companyName, publicKey);
-                Console.WriteLine($"companyName encrypting: {encryptedCompanyName}");
+                Console.WriteLine($"companyName encrypted: {encryptedCompanyName}");
 
                 Console.WriteLine($"encrypting description: {description}");
                 string encryptedDescription = security.Encrypt(description, publicKey);
-                string encryptedEmail = security.Encrypt(email, publicKey);
-                Console.WriteLine("Encrypted report fields.");
+                Console.WriteLine($"encrypted description: {encryptedDescription}");
+
+                string encryptedEmail;
+                if (!string.IsNullOrEmpty(email))
+                {
+                    Console.WriteLine($"encrypting email: {email}");
+                    encryptedEmail = security.Encrypt(email, publicKey);
+                    Console.WriteLine($"encrypted email: {encryptedEmail}");
+                }
 
                 Report reportToSend = new Report(industryName, encryptedCompanyName, encryptedDescription, encryptedEmail);
 
@@ -68,6 +75,8 @@ namespace ReactApp1
                 // Check if there are any encrypted reports
                 if (encryptedReports.Count > 0)
                 {
+                    Console.WriteLine($"Number of reports fetched: {encryptedReports.Count}");
+
                     // Get the private key for decryption
                     Console.WriteLine($"fetching private key");
                     byte[] encryptedSerializedPrivateKey = ps.GetPrivateKey(industryName);
@@ -128,7 +137,7 @@ namespace ReactApp1
                 else
                 {
                     // Return an empty list if there are no encrypted reports
-                    return new List<Report>();
+                    throw new Exception("List is 0 or smaller");
                 }
             }
             catch (Exception ex)
