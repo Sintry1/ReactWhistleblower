@@ -53,7 +53,7 @@ namespace ReactApp1
             }
         }
 
-        [HttpGet("userPassword/{userName}")]
+        [HttpGet("passwordCheck/{userName}")]
         public IActionResult UserPassword(string userName)
         {
             try
