@@ -54,7 +54,7 @@ namespace ReactApp1
                     command.Prepare();
 
                     // Execute the query and cast the result to a boolean
-                    bool userExists = (bool)command.ExecuteScalar();
+                    bool userExists = (int)command.ExecuteScalar() == 1;
 
                     //returns true after everything is done.
                     return userExists;
@@ -514,7 +514,7 @@ namespace ReactApp1
                     command.Prepare();
 
                     // Execute the query and cast the result to a boolean
-                    bool entryExists = (bool)command.ExecuteScalar();
+                    bool entryExists = (int)command.ExecuteScalar() == 1;
 
                     //returns true after everything is done.
                     return entryExists;
