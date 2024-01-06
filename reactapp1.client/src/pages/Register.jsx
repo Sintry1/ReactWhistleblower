@@ -7,6 +7,8 @@ export default function Register() {
   const [repeatPassword, setRepeatPassword] = useState("");
   const [industry, setIndustry] = useState("");
 
+  const host = "http://localhost:5090/";
+
   const salt = bcrypt.genSaltSync(10);
 
   const hashPassword = (password) => {
@@ -33,25 +35,29 @@ export default function Register() {
   const registerRegulator = async (email, password, industry) => {
     const hashedPassword = hashPassword(password);
     let response;
-    try {response = await fetch("http://localhost:5090/api/Regulator/createRegulator", {
-      method: "POST",
-      body: JSON.stringify({
-        Username: email,
-        HashedPassword: hashedPassword,
-        IndustryName: industry,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  } catch (err) {
-    console.error('Network error:', err);
-    return
-  }
-  if (!response.ok){
-    console.error('Response error:', response.status);
-    return;
-  }
+    try {
+      response = await fetch(
+        `${host}api/Regulator/createRegulator`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            Username: email,
+            HashedPassword: hashedPassword,
+            IndustryName: industry,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (err) {
+      console.error("Network error:", err);
+      return;
+    }
+    if (!response.ok) {
+      console.error("Response error:", response.status);
+      return;
+    }
     const data = await response.json();
     return data;
   };

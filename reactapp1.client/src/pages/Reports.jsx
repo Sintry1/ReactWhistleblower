@@ -7,19 +7,23 @@ export default function Reports() {
 
   const host = "http://localhost:5090/";
 
+////// FIGURE OUT HOW TO PASS THE INDUSTRY TO THE REPORTS PAGE AFTER LOGIN
+
+const fetchReports = async () => {
+  try {
+    const response = await axios.get(
+      `${host}api/Report/retrieveReports/Information Technology`,
+      {}
+    );
+    console.log(response.data);
+  } catch (error) {
+    console.error("Error fetching reports:", error);
+  }
+};
+
   useEffect(() => {
     // Fetch reports from the database
-    const fetchReports = async () => {
-      try {
-        const response = await axios.get(
-          `${host}api/retrieveReports/${"Information Technology"}`,
-          {}
-        );
-        console.log(response.data);
-      } catch (error) {
-        console.error("Error fetching reports:", error);
-      }
-    };
+    
 
     fetchReports();
   }, []);

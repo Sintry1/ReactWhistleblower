@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import "./SendReport.css";
-import axios from "axios";
 
 export default function SendReport() {
   const host = "http://localhost:5090/";
@@ -112,7 +111,7 @@ export default function SendReport() {
     );
 
     // Send report using Axios
-    await fetch("http://localhost:5090/api/Report/sendReport", {
+    await fetch(`${host}api/Report/sendReport`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -93,38 +93,24 @@ namespace ReactApp1
                         $"INSERT INTO regulators (regulator_name, password, public_key, private_key, industry_id) VALUES (@userName, @hash, @publicKey, @privateKey, @industry_id)";
 
                     // Sets a mySQL parameter for the prepared statement
-                    Console.WriteLine("Setting up UserNameParam in StoreRegulatorInforamtion");
                     MySqlParameter userNameParam = new MySqlParameter("userName", userName);
-                    Console.WriteLine("Set up userNameParam:" + userNameParam + "Setting up hashParam");
                     MySqlParameter hashParam = new MySqlParameter("hash", hash);
-                    Console.WriteLine("Set up hashParam:" + userNameParam + "Setting up publicKeyParam");
                     MySqlParameter publicKeyParam = new MySqlParameter("publicKey", publicKey);
-                    Console.WriteLine("Set up publicKeyParam:" + userNameParam + "Setting up privateKeyParam");
                     MySqlParameter privateKeyParam = new MySqlParameter("privateKey", encryptedPrivateKey);
-                    Console.WriteLine("Set up privateKeyParam:" + userNameParam + "Setting up industryIDParam");
                     MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
-                    Console.WriteLine("Set up industryIDParam" + industryIDParam);
 
                     // Adds the parameter to the command
-                    Console.WriteLine("Adding usernameParam");
                     command.Parameters.Add(userNameParam);
-                    Console.WriteLine("usernameParam added, adding hashParam");
                     command.Parameters.Add(hashParam);
-                    Console.WriteLine("hashParam added, adding publicKeyParam");
                     command.Parameters.Add(publicKeyParam);
-                    Console.WriteLine("publicKeyParam added, adding privateKeyParam");
                     command.Parameters.Add(privateKeyParam);
-                    Console.WriteLine("privateKeyParam added, adding industryIDParam");
                     command.Parameters.Add(industryIDParam);
-                    Console.WriteLine("industryIDParam added, calling Prepare()");
 
                     // Call Prepare after setting the Commandtext and Parameters.
                     command.Prepare();
-                    Console.WriteLine("Prepare() called, executing query");
 
                     // Execute the query and cast the result to a boolean
                     command.ExecuteNonQuery();
-                    Console.WriteLine("Query executed successfully");
                 }
                 //executes at the end, no matter if it returned a value before or not
                 finally
@@ -228,7 +214,6 @@ namespace ReactApp1
             {
                 // Set credentials for the user needed
                 dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
-                Console.WriteLine("Usernname for DB inside GetIndustryID: " + DotNetEnv.Env.GetString("OTHER_READER_NAME") + ", password for db: " + DotNetEnv.Env.GetString("OTHER_READER_PASSWORD"));
 
                 // Use MySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
@@ -240,23 +225,17 @@ namespace ReactApp1
                     {
                         // Query to get industry_id based on industryName
                         string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
-                        Console.WriteLine($"Executing query: {industryIdQuery}");
 
                         // Create and prepare an SQL statement for industry_id
-                        Console.WriteLine("Creating command...");
                         MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
 
-                        Console.WriteLine("Adding parameters...");
                         industryIdCommand.Parameters.AddWithValue("@industry_name", industryName);
 
-                        Console.WriteLine("Preparing command...");
                         industryIdCommand.Prepare();
 
-                        Console.WriteLine("industryIdCommand.Prepare(); Line reached");
 
                         // Execute the query to get industry_id
                         int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
-                        Console.WriteLine($"Got industry_id: {industryId}");
 
                         return industryId;
                     }
@@ -299,16 +278,13 @@ namespace ReactApp1
             //Calls another prepared statement to get the industry ID from the industry name
             DotNetEnv.Env.Load();
             int industryId = GetIndustryID(report.IndustryName);
-            Console.WriteLine($"Got industry_id: {industryId}");
 
-            Console.WriteLine("Usernname for DB inide StoreReport: " + DotNetEnv.Env.GetString("REPORT_WRITER_NAME") + ", password for db: " + Env.GetString("REPORT_WRITER_PASSWORD"));
 
             try
             {
 
                 // Set credentials for the user needed
                 dbConnection.SetConnectionCredentials(Env.GetString("REPORT_WRITER_NAME"), Env.GetString("REPORT_WRITER_PASSWORD"));
-                Console.WriteLine("Connection opened successfully.");
                 // Use mySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
@@ -321,7 +297,6 @@ namespace ReactApp1
                         // Create and prepare an SQL statement.
                         command.CommandText =
                             $"INSERT INTO reports (industry_id, company_name, description, email) VALUES (@industry_id, @company_name, @description, @email)";
-                        Console.WriteLine($"Executing query: {command.CommandText}");
 
                         // Sets mySQL parameters for the prepared statement
                         MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
@@ -350,7 +325,6 @@ namespace ReactApp1
 
                         // Execute the query
                         object result = command.ExecuteScalar();
-                        Console.WriteLine($"Query executed successfully. Result: {result}");
 
                         // Return true if no exceptions are thrown
                         return true;
@@ -469,7 +443,6 @@ namespace ReactApp1
                         // Create and prepare an SQL statement.
                         command.CommandText =
                             $"SELECT public_key FROM regulators WHERE industry_id = @industry_id";
-                        Console.WriteLine($"Executing query: {command.CommandText}");
 
                         // Sets mySQL parameters for the prepared statement
                         MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
@@ -483,7 +456,6 @@ namespace ReactApp1
                         // Execute the query and cast the result to a byte array
                         byte[] result = command.ExecuteScalar() as byte[];
                         Console.WriteLine("Query executed successfully.");
-                        Console.WriteLine($"Got key: {BitConverter.ToString(result)}");
 
                         // Return the byte array
                         return result;
