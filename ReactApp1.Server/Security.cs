@@ -70,6 +70,16 @@ namespace ReactApp1
             return false;
         }
 
+        //Checks if industry matches the industry belonging to the user
+        public bool IndustryMatch(string userName, string industryName)
+        {
+            if (ps.IndustryMatch(userName, industryName))
+            {
+                return true;
+            }
+            return false;
+        }
+
 
 
         // Function for calling the preparedStatement and returning the hashedPassword

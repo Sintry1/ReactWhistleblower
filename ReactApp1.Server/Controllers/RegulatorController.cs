@@ -68,6 +68,22 @@ namespace ReactApp1
                 return StatusCode(500, new { Success = false, Message = "Internal server error." });
             }
         }
+
+        [HttpGet("checkIndustry/{userName}")]
+        public IActionResult IndustryMatch(string userName, string industryName)
+        {
+            try
+            {
+                bool exists = security.IndustryMatch(userName, industryName);
+
+                return Ok(new { Success = true, UserExists = exists });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging purposes
+                return StatusCode(500, new { Success = false, Message = "Internal server error." });
+            }
+        }
     }
 
     public class RegulatorRequest

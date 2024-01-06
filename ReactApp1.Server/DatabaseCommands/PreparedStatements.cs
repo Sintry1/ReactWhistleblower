@@ -482,5 +482,51 @@ namespace ReactApp1
             }
         }
 
+        public bool IndustryMatch(string userName,string industryName)
+        {
+            //Calls another prepared statement to get the industry ID from the industry name
+            int industryId = GetIndustryID(industryName);
+
+            //Set credentials for the user needed
+            dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
+
+            //uses mySqlConnection to open the connection and throws an exception if it fails
+            using (MySqlConnection connection = dbConnection.OpenConnection())
+            {
+                try
+                {
+                    //creates an instance of MySqlCommand, a method in the mysql library
+                    MySqlCommand command = new MySqlCommand(null, connection);
+
+                    // Create and prepare an SQL statement.
+                    command.CommandText =
+                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulator WHERE industry_id = @industry_id AND user_name = @userName) THEN CAST('TRUE' AS BIT) ELSE CAST('FALSE' AS BIT) END";
+
+                    // Sets MySQL parameters for the prepared statement
+                    MySqlParameter industryIdParam = new MySqlParameter("industry_id", industryId);
+                    MySqlParameter userNameParam = new MySqlParameter("userName", userName);
+
+                    // Adds the parameters to the command
+                    command.Parameters.Add(industryIdParam);
+                    command.Parameters.Add(userNameParam);
+
+                    // Call Prepare after setting the Commandtext and Parameters.
+                    command.Prepare();
+
+                    // Execute the query and cast the result to a boolean
+                    bool entryExists = (bool)command.ExecuteScalar();
+
+                    //returns true after everything is done.
+                    return entryExists;
+                }
+                //executes at the end, no matter if it returned a value before or not
+                finally
+                {
+                    //closes the connection at the VERY end
+                    dbConnection.CloseConnection();
+                }
+            }
+        }
+
     }
 }
