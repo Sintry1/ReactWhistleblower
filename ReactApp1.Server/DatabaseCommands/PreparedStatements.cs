@@ -9,8 +9,6 @@ namespace ReactApp1
          * this ensures that the connection can only be READ by other classes and not modified
          */
         private readonly DBConnection dbConnection;
-        
-        
 
         //Constructor for PreparedStatements
         private PreparedStatements()
@@ -28,63 +26,72 @@ namespace ReactApp1
 
         //This method checks if the user exists in our database, this method may be COMPLETELY obsolete, thanks to firebase
         public bool ExistingUser(string userName)
-{
-    Console.WriteLine("Setting connection credentials...");
-    dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
-
-    Console.WriteLine("Opening connection...");
-    using (MySqlConnection connection = dbConnection.OpenConnection())
-    {
-        try
         {
-            Console.WriteLine("Creating command...");
-            MySqlCommand command = new MySqlCommand(null, connection);
+            Console.WriteLine("Setting connection credentials...");
+            dbConnection.SetConnectionCredentials(
+                Env.GetString("OTHER_READER_NAME"),
+                Env.GetString("OTHER_READER_PASSWORD")
+            );
 
-            Console.WriteLine("Preparing SQL statement...");
-            command.CommandText =
-                $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE regulator_name = @userName) THEN 1 ELSE 0 END";
+            Console.WriteLine("Opening connection...");
+            using (MySqlConnection connection = dbConnection.OpenConnection())
+            {
+                try
+                {
+                    Console.WriteLine("Creating command...");
+                    MySqlCommand command = new MySqlCommand(null, connection);
 
-            Console.WriteLine("Setting parameter...");
-            MySqlParameter userNameParam = new MySqlParameter("userName", userName);
+                    Console.WriteLine("Preparing SQL statement...");
+                    command.CommandText =
+                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE regulator_name = @userName) THEN 1 ELSE 0 END";
 
-            Console.WriteLine("Adding parameter to command...");
-            command.Parameters.Add(userNameParam);
+                    Console.WriteLine("Setting parameter...");
+                    MySqlParameter userNameParam = new MySqlParameter("userName", userName);
 
-            Console.WriteLine("Preparing command...");
-            command.Prepare();
+                    Console.WriteLine("Adding parameter to command...");
+                    command.Parameters.Add(userNameParam);
 
-            Console.WriteLine("Executing query...");
-            bool userExists = (int)command.ExecuteScalar() == 1;
+                    Console.WriteLine("Preparing command...");
+                    command.Prepare();
 
-            Console.WriteLine("Query executed. User exists: " + userExists);
-            return userExists;
+                    Console.WriteLine("Executing query...");
+                    bool userExists = (int)command.ExecuteScalar() == 1;
+
+                    Console.WriteLine("Query executed. User exists: " + userExists);
+                    return userExists;
+                }
+                finally
+                {
+                    Console.WriteLine("Closing connection...");
+                    dbConnection.CloseConnection();
+                    Console.WriteLine("Connection closed.");
+                }
+            }
         }
-        finally
-        {
-            Console.WriteLine("Closing connection...");
-            dbConnection.CloseConnection();
-            Console.WriteLine("Connection closed.");
-        }
-    }
-}
 
         //Stores username and the hashedPassword, this method may be COMPLETELY obsolete, thanks to firebase
-        public void StoreRegulatorInformation(string userName, string hash, byte[] publicKey, byte[] encryptedPrivateKey, string industryName)
+        public void StoreRegulatorInformation(
+            string userName,
+            string hash,
+            byte[] publicKey,
+            byte[] encryptedPrivateKey,
+            string industryName
+        )
         {
-
             //Calls another prepared statement to get the industry ID from the industry name
             int industryId = GetIndustryID(industryName);
 
             //Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("REGULATOR_WRITER_NAME"), Env.GetString("REGULATOR_WRITER_PASSWORD"));
+            dbConnection.SetConnectionCredentials(
+                Env.GetString("REGULATOR_WRITER_NAME"),
+                Env.GetString("REGULATOR_WRITER_PASSWORD")
+            );
 
             //uses mySqlConnection to open the connection and throws an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
             {
                 try
                 {
-
-
                     //creates an instance of MySqlCommand, a method in the mysql library
                     MySqlCommand command = new MySqlCommand(null, connection);
 
@@ -96,7 +103,10 @@ namespace ReactApp1
                     MySqlParameter userNameParam = new MySqlParameter("userName", userName);
                     MySqlParameter hashParam = new MySqlParameter("hash", hash);
                     MySqlParameter publicKeyParam = new MySqlParameter("publicKey", publicKey);
-                    MySqlParameter privateKeyParam = new MySqlParameter("privateKey", encryptedPrivateKey);
+                    MySqlParameter privateKeyParam = new MySqlParameter(
+                        "privateKey",
+                        encryptedPrivateKey
+                    );
                     MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
 
                     // Adds the parameter to the command
@@ -123,21 +133,23 @@ namespace ReactApp1
 
         public byte[] GetPrivateKey(string industryName)
         {
-
             //Calls another prepared statement to get the industry ID from the industry name
             int industryId = GetIndustryID(industryName);
 
             //Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("REGULATOR_WRITER_NAME"), Env.GetString("REGULATOR_WRITER_PASSWORD"));
+            dbConnection.SetConnectionCredentials(
+                Env.GetString("REGULATOR_WRITER_NAME"),
+                Env.GetString("REGULATOR_WRITER_PASSWORD")
+            );
 
             //uses mySqlConnection to open the connection and throws an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
             {
                 try
                 {
-
                     // Query to get private_key based on industry_id
-                    string privateKeyQuery = "SELECT private_key FROM regulators WHERE industry_id = @industry_id";
+                    string privateKeyQuery =
+                        "SELECT private_key FROM regulators WHERE industry_id = @industry_id";
 
                     // Create and prepare an SQL statement for private_key
                     MySqlCommand privateKeyCommand = new MySqlCommand(privateKeyQuery, connection);
@@ -148,7 +160,8 @@ namespace ReactApp1
                     byte[] privateKey = (byte[])privateKeyCommand.ExecuteScalar();
 
                     return privateKey;
-                }catch (MySqlException ex)
+                }
+                catch (MySqlException ex)
                 {
                     return null;
                 }
@@ -164,14 +177,15 @@ namespace ReactApp1
         //Gets the stores has of the user's password, this method may be COMPLETELY obsolete, thanks to firebase
         public string GetHashedPassword(string userName)
         {
-
             //Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
+            dbConnection.SetConnectionCredentials(
+                Env.GetString("OTHER_READER_NAME"),
+                Env.GetString("OTHER_READER_PASSWORD")
+            );
 
             //uses mySqlConnection to open the connection and throws an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
             {
-
                 try
                 {
                     //creates an instance of MySqlCommand, a method in the mysql library
@@ -213,26 +227,31 @@ namespace ReactApp1
             try
             {
                 // Set credentials for the user needed
-                dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
+                dbConnection.SetConnectionCredentials(
+                    Env.GetString("OTHER_READER_NAME"),
+                    Env.GetString("OTHER_READER_PASSWORD")
+                );
 
                 // Use MySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
-
                     Console.WriteLine("Connection opened successfully.");
 
                     try
                     {
                         // Query to get industry_id based on industryName
-                        string industryIdQuery = "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
+                        string industryIdQuery =
+                            "SELECT industry_id FROM industry WHERE industry_name = @industry_name";
 
                         // Create and prepare an SQL statement for industry_id
-                        MySqlCommand industryIdCommand = new MySqlCommand(industryIdQuery, connection);
+                        MySqlCommand industryIdCommand = new MySqlCommand(
+                            industryIdQuery,
+                            connection
+                        );
 
                         industryIdCommand.Parameters.AddWithValue("@industry_name", industryName);
 
                         industryIdCommand.Prepare();
-
 
                         // Execute the query to get industry_id
                         int industryId = Convert.ToInt32(industryIdCommand.ExecuteScalar());
@@ -243,7 +262,7 @@ namespace ReactApp1
                     {
                         Console.WriteLine($"Error preparing command: {ex.Message}");
                         throw;
-                        }
+                    }
                     catch (MySqlException ex)
                     {
                         // Handle the exception (e.g., log it) and rethrow
@@ -266,7 +285,6 @@ namespace ReactApp1
             }
         }
 
-
         /*
          * Takes an object of type Report, made using the Report class
          * Tries to takes parameters from the object and sets them as paramaters for the prepared statement
@@ -279,16 +297,16 @@ namespace ReactApp1
             DotNetEnv.Env.Load();
             int industryId = GetIndustryID(report.IndustryName);
 
-
             try
             {
-
                 // Set credentials for the user needed
-                dbConnection.SetConnectionCredentials(Env.GetString("REPORT_WRITER_NAME"), Env.GetString("REPORT_WRITER_PASSWORD"));
+                dbConnection.SetConnectionCredentials(
+                    Env.GetString("REPORT_WRITER_NAME"),
+                    Env.GetString("REPORT_WRITER_PASSWORD")
+                );
                 // Use mySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
                 {
-
                     try
                     {
                         // Create an instance of MySqlCommand
@@ -299,9 +317,18 @@ namespace ReactApp1
                             $"INSERT INTO reports (industry_id, company_name, description, email) VALUES (@industry_id, @company_name, @description, @email)";
 
                         // Sets mySQL parameters for the prepared statement
-                        MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
-                        MySqlParameter companyNameParam = new MySqlParameter("company_name", report.CompanyName);
-                        MySqlParameter msgParam = new MySqlParameter("description", report.Description);
+                        MySqlParameter industryIDParam = new MySqlParameter(
+                            "industry_id",
+                            industryId
+                        );
+                        MySqlParameter companyNameParam = new MySqlParameter(
+                            "company_name",
+                            report.CompanyName
+                        );
+                        MySqlParameter msgParam = new MySqlParameter(
+                            "description",
+                            report.Description
+                        );
 
                         // Check if email is null, and set the parameter accordingly
                         MySqlParameter emailParam;
@@ -352,7 +379,6 @@ namespace ReactApp1
             }
         }
 
-
         /*
          * Fetches all reports that have the same industry ID as passed to the function
          * All information is turned into a "Report" object
@@ -367,7 +393,10 @@ namespace ReactApp1
             Console.WriteLine($"Got industry_id: {industryId}");
 
             // Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("REPORT_READER_NAME"), Env.GetString("REPORT_READER_PASSWORD"));
+            dbConnection.SetConnectionCredentials(
+                Env.GetString("REPORT_READER_NAME"),
+                Env.GetString("REPORT_READER_PASSWORD")
+            );
 
             // Use mySqlConnection to open the connection and throw an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
@@ -378,8 +407,7 @@ namespace ReactApp1
                     MySqlCommand command = new MySqlCommand(null, connection);
 
                     // Create and prepare an SQL statement.
-                    command.CommandText =
-                        "SELECT * FROM reports WHERE industry_id = @industry_id";
+                    command.CommandText = "SELECT * FROM reports WHERE industry_id = @industry_id";
 
                     // Set mySQL parameters for the prepared statement
                     MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
@@ -394,9 +422,16 @@ namespace ReactApp1
                             int reportID = reader.GetInt32("report_id");
                             string companyName = reader.GetString("company_name");
                             string description = reader.GetString("description");
-                            string email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email");
+                            string email = reader.IsDBNull(reader.GetOrdinal("email"))
+                                ? null
+                                : reader.GetString("email");
 
-                            Report report = new Report(industryName, companyName, description, email);
+                            Report report = new Report(
+                                industryName,
+                                companyName,
+                                description,
+                                email
+                            );
                             reports.Add(report);
                         }
                     }
@@ -418,7 +453,6 @@ namespace ReactApp1
             }
         }
 
-
         public byte[] GetPublicKey(string industryName)
         {
             try
@@ -427,7 +461,10 @@ namespace ReactApp1
                 int industryId = GetIndustryID(industryName);
 
                 // Set credentials for the user needed
-                dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
+                dbConnection.SetConnectionCredentials(
+                    Env.GetString("OTHER_READER_NAME"),
+                    Env.GetString("OTHER_READER_PASSWORD")
+                );
 
                 // Use MySqlConnection to open the connection and throw an exception if it fails
                 using (MySqlConnection connection = dbConnection.OpenConnection())
@@ -436,7 +473,6 @@ namespace ReactApp1
 
                     try
                     {
-
                         // Create an instance of MySqlCommand
                         MySqlCommand command = new MySqlCommand(null, connection);
 
@@ -445,7 +481,10 @@ namespace ReactApp1
                             $"SELECT public_key FROM regulators WHERE industry_id = @industry_id";
 
                         // Sets mySQL parameters for the prepared statement
-                        MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
+                        MySqlParameter industryIDParam = new MySqlParameter(
+                            "industry_id",
+                            industryId
+                        );
 
                         // Adds the parameters to the command
                         command.Parameters.Add(industryIDParam);
@@ -482,13 +521,16 @@ namespace ReactApp1
             }
         }
 
-        public bool IndustryMatch(string userName,string industryName)
+        public bool IndustryMatch(string userName, string industryName)
         {
             //Calls another prepared statement to get the industry ID from the industry name
             int industryId = GetIndustryID(industryName);
 
             //Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
+            dbConnection.SetConnectionCredentials(
+                Env.GetString("OTHER_READER_NAME"),
+                Env.GetString("OTHER_READER_PASSWORD")
+            );
 
             //uses mySqlConnection to open the connection and throws an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
@@ -527,6 +569,5 @@ namespace ReactApp1
                 }
             }
         }
-
     }
 }

@@ -1,11 +1,10 @@
-﻿using MySql.Data.MySqlClient;
-using DotNetEnv;
+﻿using DotNetEnv;
+using MySql.Data.MySqlClient;
 
 namespace ReactApp1
 {
     public class DBConnection
     {
-
         private MySqlConnection connection;
         private string serverConnectionString;
         private string userCredentials;
@@ -24,7 +23,8 @@ namespace ReactApp1
             Env.Load();
 
             // Set connection string with default values from .env file
-            serverConnectionString = $"Server={Env.GetString("DB_SERVER")};Port={Env.GetString("DB_PORT")};Database={Env.GetString("DB_NAME")};";
+            serverConnectionString =
+                $"Server={Env.GetString("DB_SERVER")};Port={Env.GetString("DB_PORT")};Database={Env.GetString("DB_NAME")};";
             connection.ConnectionString = serverConnectionString;
         }
 

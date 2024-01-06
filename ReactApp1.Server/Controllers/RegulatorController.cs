@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using ReactApp1.Server;
-using System.Collections.Generic;
 
 namespace ReactApp1
 {
