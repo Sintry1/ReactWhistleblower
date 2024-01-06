@@ -42,7 +42,7 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE regulator_name = @userName) THEN CAST('TRUE' AS BIT) ELSE CAST('FALSE' AS BIT) END";
+                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE regulator_name = @userName) THEN 1 ELSE 0 END";
 
                     // Sets a mySQL parameter for the prepared statement
                     MySqlParameter userNameParam = new MySqlParameter("userName", userName);
@@ -500,7 +500,7 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulator WHERE industry_id = @industry_id AND user_name = @userName) THEN CAST('TRUE' AS BIT) ELSE CAST('FALSE' AS BIT) END";
+                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulator WHERE industry_id = @industry_id AND user_name = @userName) THEN 1 ELSE 0 END";
 
                     // Sets MySQL parameters for the prepared statement
                     MySqlParameter industryIdParam = new MySqlParameter("industry_id", industryId);
