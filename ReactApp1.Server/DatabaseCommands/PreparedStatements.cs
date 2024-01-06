@@ -28,45 +28,45 @@ namespace ReactApp1
 
         //This method checks if the user exists in our database, this method may be COMPLETELY obsolete, thanks to firebase
         public bool ExistingUser(string userName)
+{
+    Console.WriteLine("Setting connection credentials...");
+    dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
+
+    Console.WriteLine("Opening connection...");
+    using (MySqlConnection connection = dbConnection.OpenConnection())
+    {
+        try
         {
-            //Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(Env.GetString("OTHER_READER_NAME"), Env.GetString("OTHER_READER_PASSWORD"));
+            Console.WriteLine("Creating command...");
+            MySqlCommand command = new MySqlCommand(null, connection);
 
-            //uses mySqlConnection to open the connection and throws an exception if it fails
-            using (MySqlConnection connection = dbConnection.OpenConnection())
-            {
-                try
-                {
-                    //creates an instance of MySqlCommand, a method in the mysql library
-                    MySqlCommand command = new MySqlCommand(null, connection);
+            Console.WriteLine("Preparing SQL statement...");
+            command.CommandText =
+                $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE regulator_name = @userName) THEN 1 ELSE 0 END";
 
-                    // Create and prepare an SQL statement.
-                    command.CommandText =
-                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE regulator_name = @userName) THEN 1 ELSE 0 END";
+            Console.WriteLine("Setting parameter...");
+            MySqlParameter userNameParam = new MySqlParameter("userName", userName);
 
-                    // Sets a mySQL parameter for the prepared statement
-                    MySqlParameter userNameParam = new MySqlParameter("userName", userName);
+            Console.WriteLine("Adding parameter to command...");
+            command.Parameters.Add(userNameParam);
 
-                    // Adds the parameter to the command
-                    command.Parameters.Add(userNameParam);
+            Console.WriteLine("Preparing command...");
+            command.Prepare();
 
-                    // Call Prepare after setting the Commandtext and Parameters.
-                    command.Prepare();
+            Console.WriteLine("Executing query...");
+            bool userExists = (int)command.ExecuteScalar() == 1;
 
-                    // Execute the query and cast the result to a boolean
-                    bool userExists = (int)command.ExecuteScalar() == 1;
-
-                    //returns true after everything is done.
-                    return userExists;
-                }
-                //executes at the end, no matter if it returned a value before or not
-                finally
-                {
-                    //closes the connection at the VERY end
-                    dbConnection.CloseConnection();
-                }
-            }
+            Console.WriteLine("Query executed. User exists: " + userExists);
+            return userExists;
         }
+        finally
+        {
+            Console.WriteLine("Closing connection...");
+            dbConnection.CloseConnection();
+            Console.WriteLine("Connection closed.");
+        }
+    }
+}
 
         //Stores username and the hashedPassword, this method may be COMPLETELY obsolete, thanks to firebase
         public void StoreRegulatorInformation(string userName, string hash, byte[] publicKey, byte[] encryptedPrivateKey, string industryName)

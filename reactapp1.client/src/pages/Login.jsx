@@ -1,25 +1,47 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import bcrypt from "bcryptjs";
-import axios from "axios"; 
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [industry, setIndustry] = useState("");
+
+
 
   const host = "http://localhost:5090/";
 
-  const salt = bcrypt.genSaltSync(10);
-
-  const hashPassword = (password) => {
-    const hashedPassword = bcrypt.hashSync(password, salt);
-    return hashedPassword;
-  };
-
   const checkPassword = async (name, password) => {
     name = username;
-    const storedPassword = axios.get(`${host}/Regulator/passwordCheck/${name}`, {});
+
+    const storedPassword = await fetch(
+      `${host}api/Regulator/passwordCheck/${name}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     return bcrypt.compareSync(password, storedPassword);
+  };
+
+  const checkUserExists = async (name) => {
+    name = username;
+
+    const response = await fetch(`${host}api/Regulator/userExists/${name}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      return false;
+    }
+
+    const data = await response.json();
+    console.log(data);
+    return data.exists;
   };
 
   const handleUsernameChange = (e) => {
@@ -116,12 +138,49 @@ export default function Login() {
       iv: iv,
       input: new Uint8Array(cipher),
     };
-  }; 
+  };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const encryptedPassword = encryptValue(password);
-    // Perform login logic here with encrypted values
+
+    try {
+      // Check if user exists
+      if (!checkUserExists(username)) {
+        throw new Error("User does not exist");
+      }
+      // const userExistsResponse = await fetch(
+      //   `${host}api/Regulator/userExists/${username}`
+      // );
+      // if (!userExistsResponse.data.UserExists) {
+      //   throw new Error("User does not exist");
+      // }
+
+      // Check if industry matches
+      // const industryMatchesResponse = await axios.get(
+      //   `${host}api/Regulator/checkIndustry/${username}/${industry}`
+      // );
+      // if (!industryMatchesResponse.data.IndustryMatches) {
+      //   throw new Error("Industry does not match");
+      // }
+
+      // Check if password matches
+      // Assuming you have an endpoint for this
+      // const passwordMatchesResponse = await checkPassword(username, password);
+      // if (!passwordMatchesResponse) {
+      //   throw new Error("Password does not match");
+      // }
+
+      // Check is user exists
+      // if user exists, check industry matches
+      // if industry matches, check password
+      // if password matches, login by redirecting to reports page
+      // if password does not match, display error message
+      // when redirected to reports page, pass industry and username as props (if secure)
+      // const encryptedPassword = encryptValue(password);
+      // Perform login logic here with encrypted values
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -146,9 +205,25 @@ export default function Login() {
             onChange={handlePasswordChange}
           />
         </div>
-        <button type="submit"><Link to="/reports">Login</Link></button>
+        <select
+          id="industry"
+          onChange={(e) => setIndustry(e.target.value)}
+        >
+          <option value="">Select Industry</option>
+          <option value="Information Technology">Information Technology</option>
+          <option value="Financial Services">Financial Services</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Law Enforcement">Law Enforcement</option>
+          <option value="Leisure">Leisure</option>
+          <option value="Hospitality">Hospitality</option>
+        </select>
+        <button type="submit">
+          {/* <Link to="/reports">Login</Link> */}
+        </button>
       </form>
-      <button><Link to="/register">Register</Link></button>
+      <button>
+        <Link to="/register">Register</Link>
+      </button>
     </div>
   );
 }

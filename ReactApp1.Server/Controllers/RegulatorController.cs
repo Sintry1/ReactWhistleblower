@@ -69,7 +69,7 @@ namespace ReactApp1
             }
         }
 
-        [HttpGet("checkIndustry/{userName}")]
+        [HttpGet("checkIndustry/{userName}/{industryName}")]
         public IActionResult IndustryMatch(string userName, string industryName)
         {
             try
