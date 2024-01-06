@@ -269,17 +269,5 @@ namespace ReactApp1
                 throw e;
             }
         }
-        public (string,string) FindReportIvsFromIndustryName(string industryName)
-        {
-            try
-            {
-                return ps.FindReportIvsFromIndustryName(industryName);
-
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
     }
 }

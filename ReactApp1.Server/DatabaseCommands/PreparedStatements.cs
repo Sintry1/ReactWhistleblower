@@ -1,4 +1,5 @@
 ﻿using DotNetEnv;
+using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using System.Reflection.PortableExecutable;
 
@@ -92,7 +93,7 @@ namespace ReactApp1
             byte[] publicKey,
             byte[] encryptedPrivateKey,
             string industryName,
-            string iv 
+            string iv
         )
         {
             //Calls another prepared statement to get the industry ID from the industry name
@@ -121,7 +122,7 @@ namespace ReactApp1
                     MySqlParameter hashParam = new MySqlParameter("hash", hash);
                     MySqlParameter ivParam = new MySqlParameter("iv", iv);
                     MySqlParameter publicKeyParam = new MySqlParameter("publicKey", publicKey);
-                    MySqlParameter privateKeyParam = new MySqlParameter("privateKey",encryptedPrivateKey);
+                    MySqlParameter privateKeyParam = new MySqlParameter("privateKey", encryptedPrivateKey);
                     MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
 
 
@@ -345,7 +346,7 @@ namespace ReactApp1
                         MySqlParameter companyIvParam = new MySqlParameter(
                             "company_iv",
                             report.CompanyIv
-                        ) ;
+                        );
                         MySqlParameter descriptionParam = new MySqlParameter(
                             "description",
                             report.Description
@@ -451,7 +452,7 @@ namespace ReactApp1
                             string companyIv = reader.GetString("company_iv");
                             string description = reader.GetString("description");
                             string descIv = reader.GetString("desc_iv");
-                            string email = reader.IsDBNull(reader.GetOrdinal("email")) ? null: reader.GetString("email");
+                            string email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email");
 
                             Report report = new Report(
                                 industryName,
@@ -618,7 +619,7 @@ namespace ReactApp1
             {
                 try
                 {
-                    string iv="";
+                    string iv = "";
                     //creates an instance of MySqlCommand, a method in the mysql library
                     MySqlCommand command = new MySqlCommand(null, connection);
 
@@ -656,64 +657,6 @@ namespace ReactApp1
                     dbConnection.CloseConnection();
                 }
             }
-        }
-
-        //prepared statement for finding report related ivs
-        public (string, string) FindReportIvsFromIndustryName(string industryName)
-        {
-            //Calls another prepared statement to get the industry ID from the industry name
-            int industryId = GetIndustryID(industryName);
-
-            //Set credentials for the user needed
-            dbConnection.SetConnectionCredentials(
-                Env.GetString("OTHER_READER_NAME"),
-                Env.GetString("OTHER_READER_PASSWORD")
-            );
-
-            //uses mySqlConnection to open the connection and throws an exception if it fails
-            using (MySqlConnection connection = dbConnection.OpenConnection())
-            {
-                try
-                {
-                    string companyIv = "";
-                    string descIv="";
-                    //creates an instance of MySqlCommand, a method in the mysql library
-                    MySqlCommand command = new MySqlCommand(null, connection);
-
-                    // Create and prepare an SQL statement.
-                    command.CommandText =
-                        $"SELECT company_iv, desc_iv FROM reports WHERE industry_id = @industry_id";
-
-                    // Sets MySQL parameters for the prepared statement
-                    MySqlParameter industryIdParam = new MySqlParameter("industry_id", industryId);
-
-                    // Adds the parameters to the command
-                    command.Parameters.Add(industryIdParam);
-
-                    // Call Prepare after setting the Commandtext and Parameters.
-                    command.Prepare();
-
-                    using (MySqlDataReader reader = command.ExecuteReader())
-                    {
-                        // Check if there are rows in the result
-                        if (reader.Read())
-                        {
-                            // Retrieve the "company_iv" and "desc_iv" column values as strings
-                            companyIv = reader["company_iv"].ToString();
-                            descIv = reader["desc_iv"].ToString();
-                        }
-                    }
-
-                    // Returns the company_iv and desc_iv as a tuple
-                    return (companyIv, descIv);
-                }
-                //executes at the end, no matter if it returned a value before or not
-                finally
-                {
-                    //closes the connection at the VERY end
-                    dbConnection.CloseConnection();
-                }
-            }
-        }
+        }   
     }
 }
