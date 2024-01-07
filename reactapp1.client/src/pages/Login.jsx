@@ -24,22 +24,64 @@ export default function Login() {
     return bcrypt.compareSync(password, storedPassword);
   };
 
-  const checkUserExists = async (name) => {
-    name = username;
+  const checkUsernameMatch = (decryptedUsername, inputUsername) => {
+    return decryptedUsername === inputUsername;
+  };
 
-    const response = await fetch(`${host}api/Regulator/userExists/${name}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  const checkUserExists = async (industry) => {
+    const currentUser = await fetch(
+      `${host}api/Regulator/GetIvAndUserName/${industry}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!currentUser.ok) {
+      return console.log("sumting wong");
+    }
+    const currentUserData = await currentUser.json();
+    console.log(
+      "currentUsername inside checkUserExists: ",
+      currentUserData.userName
+    );
+    const encryptionKey = await deriveKey(industry);
+
+    const decryptData = {
+      iv: Uint8Array.from(atob(currentUserData.iv), (c) => c.charCodeAt(0)),
+      username: Uint8Array.from(atob(currentUserData.userName), (c) =>
+        c.charCodeAt(0)
+      ),
+    };
+    console.log("IV length:", decryptData.iv.length);
+    console.log("Username length:", decryptData.username.length);
+    const decryptedUsername = await decryptValue(
+      decryptData,
+      encryptionKey
+    );
+    console.log(
+      "Decrypted Username inside checkUserExists: ",
+      decryptedUsername
+    );
+
+    const response = await fetch(
+      `${host}api/Regulator/userExists/${industry}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     if (!response.ok) {
       return false;
     }
 
+    console.log("Response inside checkUserExists: ", await response.json());
     const data = await response.json();
-    console.log(data);
-    return data.exists;
+    console.log("Data inside checkUserExists: ", data);
+    return data;
   };
 
   const handleUsernameChange = (e) => {
@@ -182,25 +224,27 @@ export default function Login() {
     }
   };
 
-  
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     let encryptionKey = await deriveKey(industry);
-      
-    let encryptedUsername = await encryptForCompare(username, encryptionKey);
-  
-    let encryptedUsernameString = btoa(
-      String.fromCharCode.apply(null, encryptedUsername.input)
-    );
 
-    console.log("Ecnrypted Username: ", encryptedUsernameString);
+    let salt = await fetch(`${host}api/Regulator/GetRegulatorSalt/${industry}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    // let encryptedUsernameString = btoa(
+    //   String.fromCharCode.apply(null, encryptedUsername.input)
+    // );
+
+    let data = await checkUserExists(industry);
+    console.log(data);
 
     try {
       // Check if user exists
-      if (!checkUserExists(encryptedUsername)) {
-        throw new Error("User does not exist");
-      }
+      // if (!checkUserExists(encryptedUsername)) {
+      //   throw new Error("User does not exist");
+      // }
       // const userExistsResponse = await fetch(
       //   `${host}api/Regulator/userExists/${username}`
       // );

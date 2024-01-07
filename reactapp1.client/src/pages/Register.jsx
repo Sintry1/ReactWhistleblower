@@ -9,9 +9,8 @@ export default function Register() {
 
   const host = "http://localhost:5090/";
 
-  const salt = bcrypt.genSaltSync(10);
-
   const hashPassword = (password) => {
+    const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
     return hashedPassword;
   };
@@ -42,6 +41,7 @@ export default function Register() {
     }
 
     const salt = crypto.getRandomValues(new Uint8Array(16));
+    localStorage.setItem("Salt", salt);
 
     const encodedKey = new TextEncoder().encode(key);
 

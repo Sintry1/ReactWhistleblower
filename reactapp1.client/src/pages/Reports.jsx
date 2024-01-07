@@ -88,7 +88,7 @@ const fetchReports = async () => {
       const key = await crypto.subtle.deriveKey(
         {
           name: "PBKDF2",
-          salt: new TextEncoder().encode(localStorage.getItem("Salt")),
+          salt: ""/* await fetch(`${host}api/Regulator/GetSalt/${industry}`, {});*/,
           iterations: 100000,
           hash: { name: "SHA-256" },
         },

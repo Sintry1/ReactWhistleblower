@@ -7,13 +7,16 @@
         public string IndustryName { get; set; }
         public string Iv { get; set; }
 
+        public string Salt { get; set; }
+
         // Constructor for regulators
-        public Regulator(string userName, string hashedPassword, string industryName, string iv)
+        public Regulator(string userName, string hashedPassword, string industryName, string iv, string salt)
         {
             UserName = userName;
             HashedPassword = hashedPassword;
             IndustryName = industryName;
             Iv = iv;
+            Salt = Salt;
         }
     }
 }

@@ -66,10 +66,15 @@ export default function SendReport() {
   const encryptValue = async (input, encryptionKey) => {
     const keyMaterial = await crypto.subtle.exportKey("raw", encryptionKey);
 
+    const salt = await fetch(`${host}api/Regulator/GetRegulatorSalt/${industry}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
     const key = await crypto.subtle.deriveKey(
       {
         name: "PBKDF2",
-        salt: new TextEncoder().encode(localStorage.getItem("Salt")),
+        salt: salt,
         iterations: 100000,
         hash: { name: "SHA-256" },
       },

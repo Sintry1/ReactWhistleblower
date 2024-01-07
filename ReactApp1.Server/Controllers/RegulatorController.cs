@@ -25,8 +25,9 @@ namespace ReactApp1
                 string hashedPassword = regulator.HashedPassword;
                 string industryName = regulator.IndustryName;
                 string iv = regulator.Iv;
+                string salt = regulator.Salt;
 
-                security.CreateRegulator(userName, hashedPassword, industryName, iv);
+                security.CreateRegulator(userName, hashedPassword, industryName, iv, salt);
 
                 return Ok(new { Success = true, Message = "Regulator created successfully." });
             }

@@ -93,7 +93,8 @@ namespace ReactApp1
             byte[] publicKey,
             byte[] encryptedPrivateKey,
             string industryName,
-            string iv
+            string iv,
+            string salt
         )
         {
             //Calls another prepared statement to get the industry ID from the industry name
@@ -115,7 +116,7 @@ namespace ReactApp1
 
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"INSERT INTO regulators (regulator_name, password,iv ,public_key, private_key, industry_id) VALUES (@userName, @hash,  @iv, @publicKey, @privateKey, @industry_id)";
+                        $"INSERT INTO regulators (regulator_name, password,iv ,public_key, private_key, industry_id, salt) VALUES (@userName, @hash,  @iv, @publicKey, @privateKey, @industry_id, @salt)";
 
                     // Sets a mySQL parameter for the prepared statement
                     MySqlParameter userNameParam = new MySqlParameter("userName", userName);
@@ -124,6 +125,7 @@ namespace ReactApp1
                     MySqlParameter publicKeyParam = new MySqlParameter("publicKey", publicKey);
                     MySqlParameter privateKeyParam = new MySqlParameter("privateKey", encryptedPrivateKey);
                     MySqlParameter industryIDParam = new MySqlParameter("industry_id", industryId);
+                    MySqlParameter saltParam = new MySqlParameter("salt", salt);
 
 
                     // Adds the parameter to the command
@@ -133,6 +135,7 @@ namespace ReactApp1
                     command.Parameters.Add(publicKeyParam);
                     command.Parameters.Add(privateKeyParam);
                     command.Parameters.Add(industryIDParam);
+                    command.Parameters.Add(saltParam);
 
                     // Call Prepare after setting the Commandtext and Parameters.
                     command.Prepare();
