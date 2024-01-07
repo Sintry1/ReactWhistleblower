@@ -282,7 +282,7 @@ export default function Login() {
       try {
       // Check if user exists
       if (!checkUserExists(industry)) {
-        throw new Error("User does not exist");
+        throw new Error("There was an error logging in, please try again");
       }
       // Check if industry matches
       // const industryMatchesResponse = await axios.get(
@@ -295,9 +295,7 @@ export default function Login() {
       // Assuming you have an endpoint for this
       const passwordMatchesResponse = await checkPassword(username, password);
       if (!passwordMatchesResponse) {
-        throw new Error("Password does not match");
-      }else {
-        console.log("Password matches")
+        throw new Error("There was an error logging in, please try again");
       }
       // Check is user exists
       // if user exists, check industry matches
