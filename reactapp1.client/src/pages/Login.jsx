@@ -9,11 +9,9 @@ export default function Login() {
 
   const host = "http://localhost:5090/";
 
-
   const checkUsernameMatch = (decryptedUsername, inputUsername) => {
     return decryptedUsername === inputUsername;
   };
-
 
   const checkUserExists = async (industry) => {
     const currentUser = await fetch(
@@ -29,7 +27,7 @@ export default function Login() {
       return console.log("Something is wrong with the request");
     }
     const currentUserData = await currentUser.json();
-    
+
     const encryptionKey = await deriveKey(industry);
 
     const decryptData = {
@@ -49,13 +47,12 @@ export default function Login() {
     return checkUsernameMatch(decryptedUsername, username);
   };
 
-
   const checkPassword = async (name, password) => {
-    
-    let encryptedUsername = await encryptValue(username, await deriveKey(industry));
-    name = btoa(
-      String.fromCharCode.apply(null, encryptedUsername.data)
+    let encryptedUsername = await encryptValue(
+      username,
+      await deriveKey(industry)
     );
+    name = btoa(String.fromCharCode.apply(null, encryptedUsername.data));
 
     const storedPassword = await fetch(
       `${host}api/Regulator/passwordCheck/${name}`,
@@ -70,17 +67,9 @@ export default function Login() {
     return bcrypt.compareSync(password, data.hashedPassword);
   };
 
-
   const checkUserAndIndustryMatch = async (name, industry) => {
     let encryptedUsername = await encryptValue(name, await deriveKey(industry));
-    name = btoa(
-      String.fromCharCode.apply(null, encryptedUsername.data)
-    );
-
-    console.log("name", name);
-    console.log("name type", typeof name);
-    console.log("industry", industry);
-    console.log("industry type", typeof industry);
+    name = btoa(String.fromCharCode.apply(null, encryptedUsername.data));
 
     const response = await fetch(
       `${host}api/Regulator/checkIndustry/${name}/${industry}`,
@@ -93,7 +82,12 @@ export default function Login() {
     );
     const data = await response.json();
     console.log("Data inside checkUserAndIndustryMatch", data);
-  }
+    if (!data.industryMatch) {
+      return false;
+    } else {
+      return true;
+    }
+  };
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -231,7 +225,7 @@ export default function Login() {
   const encryptValue = async (input, encryptionKey) => {
     try {
       const keyMaterial = await crypto.subtle.exportKey("raw", encryptionKey);
-  
+
       const salt = await fetch(
         `${host}api/Regulator/GetRegulatorSalt/${industry}`,
         {
@@ -242,7 +236,7 @@ export default function Login() {
         }
       );
       const saltData = await salt.json();
-  
+
       const ivResponse = await fetch(
         `${host}api/Regulator/GetIvAndUserName/${industry}`,
         {
@@ -254,7 +248,7 @@ export default function Login() {
       );
       const ivData = await ivResponse.json();
       const iv = Uint8Array.from(atob(ivData.iv), (c) => c.charCodeAt(0));
-  
+
       const key = await crypto.subtle.deriveKey(
         {
           name: "PBKDF2",
@@ -277,18 +271,18 @@ export default function Login() {
         true,
         ["encrypt", "decrypt"]
       );
-  
+
       const data = new TextEncoder().encode(input);
-  
+
       const encryptedDataBuffer = await crypto.subtle.encrypt(
         { name: "AES-GCM", iv: iv },
         key,
         data
       );
-  
+
       // Convert the encrypted data ArrayBuffer to a Uint8Array
       const encryptedData = new Uint8Array(encryptedDataBuffer);
-  
+
       return {
         iv: Array.from(iv),
         data: Array.from(encryptedData),
@@ -303,12 +297,13 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-      try {
+    try {
+      const encryptionKey = await deriveKey(industry);
       // Check if user exists
       if (!checkUserExists(industry)) {
         throw new Error("There was an error logging in, please try again");
       }
-      // Check if industry matches
+      // Check if industry and username matches
       if (!checkUserAndIndustryMatch(username, industry)) {
         throw new Error("Industry does not match");
       }
@@ -318,13 +313,15 @@ export default function Login() {
       if (!passwordMatchesResponse) {
         throw new Error("There was an error logging in, please try again");
       }
-      // Check is user exists
-      // if user exists, check industry matches
-      // if industry matches, check password
+
+      let user = await encryptValue(username, encryptionKey);
+      user = btoa(String.fromCharCode.apply(null, user.data));
+
+      localStorage.setItem("User", user);
+      localStorage.setItem("Industry", industry);
+
       // if password matches, login by redirecting to reports page
-      // if password does not match, display error message
       // when redirected to reports page, pass industry and username as props (if secure)
-      // const encryptedPassword = encryptValue(password);
       // Perform login logic here with encrypted values
     } catch (err) {
       console.log(err);
@@ -362,7 +359,7 @@ export default function Login() {
           <option value="Leisure">Leisure</option>
           <option value="Hospitality">Hospitality</option>
         </select>
-        <button type="submit">{/* <Link to="/reports">Login</Link> */}</button>
+        <button type="submit"><Link to="/reports">Login</Link></button>
       </form>
       <button>
         <Link to="/register">Register</Link>

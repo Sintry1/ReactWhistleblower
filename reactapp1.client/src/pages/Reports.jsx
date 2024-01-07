@@ -10,10 +10,17 @@ export default function Reports() {
 ////// FIGURE OUT HOW TO PASS THE INDUSTRY TO THE REPORTS PAGE AFTER LOGIN
 
 const fetchReports = async () => {
+  let industry = localStorage.getItem("Industry");
+  let user = localStorage.getItem("User");
   try {
-    const response = await axios.get(
-      `${host}api/Report/retrieveReports/Information Technology`,
-      {}
+    const response = await fetch(
+      `${host}api/Report/getReports/${industry}/${user}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
     console.log(response.data);
   } catch (error) {
