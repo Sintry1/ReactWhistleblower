@@ -579,7 +579,7 @@ namespace ReactApp1
 
                     // Sets MySQL parameters for the prepared statement
                     MySqlParameter industryIdParam = new MySqlParameter("industry_id", industryId);
-                    MySqlParameter userNameParam = new MySqlParameter("userName", userName);
+                    MySqlParameter userNameParam = new MySqlParameter("regulator_name", userName);
 
                     // Adds the parameters to the command
                     command.Parameters.Add(industryIdParam);
