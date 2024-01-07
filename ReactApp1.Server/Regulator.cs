@@ -16,7 +16,7 @@
             HashedPassword = hashedPassword;
             IndustryName = industryName;
             Iv = iv;
-            Salt = Salt;
+            Salt = salt;
         }
     }
 }
