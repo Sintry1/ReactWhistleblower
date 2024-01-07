@@ -335,7 +335,7 @@ namespace ReactApp1
 
                         // Create and prepare an SQL statement.
                         command.CommandText =
-                            $"INSERT INTO reports (industry_id, company_name, company_iv, description, desc_iv, email) VALUES (@industry_id, @company_name, @company_iv, @description, desc_iv, @email)";
+                            $"INSERT INTO reports (industry_id, company_name, company_iv, description, desc_iv, email) VALUES (@industry_id, @company_name, @company_iv, @description, @desc_iv, @email)";
 
                         // Sets mySQL parameters for the prepared statement
                         MySqlParameter industryIDParam = new MySqlParameter(
