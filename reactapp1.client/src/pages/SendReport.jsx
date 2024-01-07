@@ -35,7 +35,16 @@ export default function SendReport() {
         break;
     }
 
-    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const salt = await fetch(
+      `${host}api/Regulator/GetRegulatorSalt/${industry}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const saltData = await salt.json();
 
     const encodedKey = new TextEncoder().encode(key);
 
@@ -50,7 +59,11 @@ export default function SendReport() {
     const derivedKey = await crypto.subtle.deriveKey(
       {
         name: "PBKDF2",
-        salt: salt,
+        salt: new Uint8Array(
+          atob(saltData.salt)
+            .split("")
+            .map((char) => char.charCodeAt(0))
+        ),
         iterations: 100000,
         hash: { name: "SHA-256" },
       },
@@ -64,43 +77,65 @@ export default function SendReport() {
   };
 
   const encryptValue = async (input, encryptionKey) => {
-    const keyMaterial = await crypto.subtle.exportKey("raw", encryptionKey);
+    try {
+      const keyMaterial = await crypto.subtle.exportKey("raw", encryptionKey);
 
-    const salt = await fetch(`${host}api/Regulator/GetRegulatorSalt/${industry}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
+      const salt = await fetch(
+        `${host}api/Regulator/GetRegulatorSalt/${industry}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const saltData = await salt.json();
 
-    const key = await crypto.subtle.deriveKey(
-      {
-        name: "PBKDF2",
-        salt: salt,
-        iterations: 100000,
-        hash: { name: "SHA-256" },
-      },
-      await crypto.subtle.importKey(
-        "raw",
-        keyMaterial,
-        { name: "PBKDF2" },
-        false,
-        ["deriveKey"]
-      ),
-      { name: "AES-GCM", length: 256 },
-      true,
-      ["encrypt", "decrypt"]
-    );
+      const key = await crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: new Uint8Array(
+            atob(saltData.salt)
+              .split("")
+              .map((char) => char.charCodeAt(0))
+          ),
+          iterations: 100000,
+          hash: { name: "SHA-256" },
+        },
+        await crypto.subtle.importKey(
+          "raw",
+          keyMaterial,
+          { name: "PBKDF2" },
+          false,
+          ["deriveKey"]
+        ),
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt", "decrypt"]
+      );
+      const iv = crypto.getRandomValues(new Uint8Array(16));
 
-    const iv = crypto.getRandomValues(new Uint8Array(16));
-    const cipher = await crypto.subtle.encrypt(
-      { name: "AES-GCM", iv: iv },
-      key,
-      new TextEncoder().encode(input)
-    );
+      const data = new TextEncoder().encode(input);
 
-    return {
-      iv: iv,
-      input: new Uint8Array(cipher),
-    };
+      const encryptedDataBuffer = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        data
+      );
+
+      // Convert the encrypted data ArrayBuffer to a Uint8Array
+      const encryptedData = new Uint8Array(encryptedDataBuffer);
+
+      return {
+        iv: Array.from(iv),
+        data: Array.from(encryptedData),
+      };
+    } catch (error) {
+      console.error("Error during encryption:", error);
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      throw error;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -109,17 +144,20 @@ export default function SendReport() {
     let encryptedReport = await encryptValue(reportDetails, encryptionKey);
     let ecnryptedCompany = await encryptValue(companyName, encryptionKey);
     let encryptedReportString = btoa(
-      String.fromCharCode.apply(null, encryptedReport.input)
+      String.fromCharCode.apply(null, encryptedReport.data)
     );
     let encryptedReportIv = btoa(
       String.fromCharCode.apply(null, encryptedReport.iv)
     );
     let encryptedCompanyString = btoa(
-      String.fromCharCode.apply(null, ecnryptedCompany.input)
+      String.fromCharCode.apply(null, ecnryptedCompany.data)
     );
     let encryptedCompanyIv = btoa(
       String.fromCharCode.apply(null, ecnryptedCompany.iv)
     );
+
+    console.log("Encrypted Report IV: ",encryptedReportIv);
+    console.log("Encrypted Company IV: ",encryptedCompanyIv);
 
     if (industry === ""){
       alert("Please select an industry");
