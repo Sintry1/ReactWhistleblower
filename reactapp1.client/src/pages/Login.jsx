@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export default function Login() {
@@ -8,6 +8,10 @@ export default function Login() {
   const [industry, setIndustry] = useState("");
 
   const host = "http://localhost:5090/";
+
+  useEffect(() => {
+    localStorage.clear();
+  }, []);
 
   const checkUsernameMatch = (decryptedUsername, inputUsername) => {
     return decryptedUsername === inputUsername;
