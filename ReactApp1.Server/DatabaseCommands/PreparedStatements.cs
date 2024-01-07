@@ -573,29 +573,41 @@ namespace ReactApp1
                     //creates an instance of MySqlCommand, a method in the mysql library
                     MySqlCommand command = new MySqlCommand(null, connection);
 
+                    Console.WriteLine("setting sql statement");
                     // Create and prepare an SQL statement.
                     command.CommandText =
-                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE industry_id = @industry_id AND regulator_name = @userName) THEN 1 ELSE 0 END";
+                        $"SELECT CASE WHEN EXISTS (SELECT 1 FROM regulators WHERE industry_id = @industry_id AND regulator_name = @userName) THEN 1 ELSE 0 END;";
 
+                    Console.WriteLine("parameterizes");
                     // Sets MySQL parameters for the prepared statement
                     MySqlParameter industryIdParam = new MySqlParameter("industry_id", industryId);
-                    MySqlParameter userNameParam = new MySqlParameter("regulator_name", userName);
-
+                    MySqlParameter userNameParam = new MySqlParameter("userName", userName);
+                    
+                    Console.WriteLine("adds parameters");
                     // Adds the parameters to the command
                     command.Parameters.Add(industryIdParam);
                     command.Parameters.Add(userNameParam);
 
+                    Console.WriteLine("preparing");
                     // Call Prepare after setting the Commandtext and Parameters.
                     command.Prepare();
 
+                    Console.WriteLine("executing");
                     // Execute the query and cast the result to a long
                     long result = (long)command.ExecuteScalar();
+                    Console.WriteLine(result);
 
                     // Convert the long result to boolean
-                    bool entryExists = result == 1;
+                    bool match = result == 1;
 
+                    Console.WriteLine("returning");
                     //returns true after everything is done.
-                    return entryExists;
+                    return match;
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    throw ex;
                 }
                 //executes at the end, no matter if it returned a value before or not
                 finally
