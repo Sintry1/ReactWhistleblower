@@ -12,9 +12,9 @@
 
 
         // Constructor for reports
-        public Report(string industryName, string companyName, string companyIv, string description, string descriptionIv, string email)
+        public Report(int? reportId, string industryName, string companyName, string companyIv, string description, string descriptionIv, string email)
         {
-            ReportID = null;
+            ReportID = reportId;
             IndustryName = industryName;
             CompanyName = companyName;
             CompanyIv = companyIv;
