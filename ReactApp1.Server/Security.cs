@@ -257,7 +257,7 @@ namespace ReactApp1
             }
         }
 
-        //Checks if industry matches the industry belonging to the user
+        //Fetches regulator IV and name from database
         public (string, string) FindRegulatorIvFromIndustryName(string industryName)
         {
             try
@@ -265,6 +265,20 @@ namespace ReactApp1
                 return ps.FindRegulatorIvFromIndustryName(industryName);
 
             } catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        //Fetches regulator salt from database
+        public string FindRegulatorSalt(string industryName)
+        {
+            try
+            {
+                return ps.FindRegulatorSalt(industryName);
+
+            }
+            catch (Exception e)
             {
                 throw e;
             }

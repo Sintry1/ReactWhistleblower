@@ -102,5 +102,22 @@ namespace ReactApp1
                 return StatusCode(500, new { Success = false, Message = "Internal server error." });
             }
         }
+
+        [HttpGet("GetRegulatorSalt/{industryName}")]
+        public IActionResult FindRegulatorSalt(string industryName)
+        {
+            try
+            {
+                // Destructuring the tuple directly in the method signature
+                string salt = security.FindRegulatorSalt(industryName);
+
+                return Ok(new { Success = true, Salt = salt});
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging purposes
+                return StatusCode(500, new { Success = false, Message = "Internal server error." });
+            }
+        }
     }
 }

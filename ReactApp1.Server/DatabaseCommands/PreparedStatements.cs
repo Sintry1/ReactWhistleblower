@@ -660,6 +660,64 @@ namespace ReactApp1
                     dbConnection.CloseConnection();
                 }
             }
-        }   
+        }
+
+            public string FindRegulatorSalt(string industryName) 
+            {
+                //Calls another prepared statement to get the industry ID from the industry name
+                int industryId = GetIndustryID(industryName);
+
+                //Set credentials for the user needed
+                dbConnection.SetConnectionCredentials(
+                    Env.GetString("OTHER_READER_NAME"),
+                    Env.GetString("OTHER_READER_PASSWORD")
+                );
+
+                //uses mySqlConnection to open the connection and throws an exception if it fails
+                using (MySqlConnection connection = dbConnection.OpenConnection())
+                {
+                    try
+                    {
+                        string salt = "";
+
+                        //creates an instance of MySqlCommand, a method in the mysql library
+                        MySqlCommand command = new MySqlCommand(null, connection);
+
+                        // Create and prepare an SQL statement.
+                        command.CommandText =
+                            $"SELECT salt FROM regulators WHERE industry_id = @industry_id";
+
+                        // Sets MySQL parameters for the prepared statement
+                        MySqlParameter industryIdParam = new MySqlParameter("industry_id", industryId);
+
+                        // Adds the parameters to the command
+                        command.Parameters.Add(industryIdParam);
+
+                        // Call Prepare after setting the Commandtext and Parameters.
+                        command.Prepare();
+
+                        // Execute the query
+                        using (MySqlDataReader reader = command.ExecuteReader())
+                        {
+                            // Check if there are rows in the result
+                            if (reader.Read())
+                            {
+                                // Retrieve the "iv" and "regulator_name" column values as strings
+                                salt = reader["salt"].ToString();
+                            }
+                        }
+
+                        // Returns the iv and regulator_name as a tuple
+                        return (salt);
+
+                    }
+                    //executes at the end, no matter if it returned a value before or not
+                    finally
+                    {
+                        //closes the connection at the VERY end
+                        dbConnection.CloseConnection();
+                    }
+                }
+            }   
     }
 }
