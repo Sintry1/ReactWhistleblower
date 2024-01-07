@@ -9,28 +9,6 @@ export default function Login() {
 
   const host = "http://localhost:5090/";
 
-  const checkPassword = async (name, password) => {
-    
-    let encryptedUsername = await encryptValue(username, await deriveKey(industry));
-    console.log("Encrypted username: ", name);
-    name = btoa(
-      String.fromCharCode.apply(null, encryptedUsername.data)
-    );
-
-    const storedPassword = await fetch(
-      `${host}api/Regulator/passwordCheck/${name}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    const data = await storedPassword.json();
-    console.log("Stored Password: ", data);
-    return bcrypt.compareSync(password, data.hashedPassword);
-  };
-
 
   const checkUsernameMatch = (decryptedUsername, inputUsername) => {
     return decryptedUsername === inputUsername;
@@ -48,7 +26,7 @@ export default function Login() {
       }
     );
     if (!currentUser.ok) {
-      return console.log("sumting wong");
+      return console.log("Something is wrong with the request");
     }
     const currentUserData = await currentUser.json();
     
@@ -70,6 +48,50 @@ export default function Login() {
 
     return checkUsernameMatch(decryptedUsername, username);
   };
+
+
+  const checkPassword = async (name, password) => {
+    
+    let encryptedUsername = await encryptValue(username, await deriveKey(industry));
+    name = btoa(
+      String.fromCharCode.apply(null, encryptedUsername.data)
+    );
+
+    const storedPassword = await fetch(
+      `${host}api/Regulator/passwordCheck/${name}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await storedPassword.json();
+    return bcrypt.compareSync(password, data.hashedPassword);
+  };
+
+
+  const checkUserAndIndustryMatch = async (name, industry) => {
+    let encryptedUsername = await encryptValue(username, await deriveKey(industry));
+    name = btoa(
+      String.fromCharCode.apply(null, encryptedUsername.data)
+    );
+
+    console.log("name", name);
+    console.log("industry", industry);
+
+    const response = await fetch(
+      `${host}api/Regulator/checkIndustry/${name}/${industry}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    console.log("Data inside checkUserAndIndustryMatch", data);
+  }
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -285,12 +307,10 @@ export default function Login() {
         throw new Error("There was an error logging in, please try again");
       }
       // Check if industry matches
-      // const industryMatchesResponse = await axios.get(
-      //   `${host}api/Regulator/checkIndustry/${username}/${industry}`
-      // );
-      // if (!industryMatchesResponse.data.IndustryMatches) {
-      //   throw new Error("Industry does not match");
-      // }
+      if (!checkUserAndIndustryMatch(username, industry)) {
+        throw new Error("Industry does not match");
+      }
+
       // Check if password matches
       const passwordMatchesResponse = await checkPassword(username, password);
       if (!passwordMatchesResponse) {
