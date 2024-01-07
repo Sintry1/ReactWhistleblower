@@ -91,9 +91,10 @@ namespace ReactApp1
         {
             try
             {
-                (string,string) iv = security.FindRegulatorIvFromIndustryName(industryName);
+                // Destructuring the tuple directly in the method signature
+                (string iv, string userName) = security.FindRegulatorIvFromIndustryName(industryName);
 
-                return Ok(new { Success = true, Iv = iv });
+                return Ok(new { Success = true, Iv = iv, UserName = userName });
             }
             catch (Exception ex)
             {
