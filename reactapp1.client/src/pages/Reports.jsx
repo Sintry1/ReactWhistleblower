@@ -53,7 +53,13 @@ const fetchReports = async () => {
         break;
     }
 
-    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const salt = await fetch(`${host}api/Regulator/GetRegulatorSalt/${industry}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const saltData = await salt.json();
 
     const encodedKey = new TextEncoder().encode(key);
 
@@ -85,6 +91,14 @@ const fetchReports = async () => {
     try {
       const keyMaterial = await crypto.subtle.exportKey("raw", decryptionKey);
 
+      const salt = await fetch(`${host}api/Regulator/GetRegulatorSalt/${industry}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const saltData = await salt.json();
+
       const key = await crypto.subtle.deriveKey(
         {
           name: "PBKDF2",
@@ -105,22 +119,20 @@ const fetchReports = async () => {
       );
 
       const iv = new Uint8Array(encryption.iv);
-      const encryptedPassword = new Uint8Array(encryption.password);
+      const encryptedValue = new Uint8Array(encryption.value);
 
-      const decryptedPasswordBuffer = await crypto.subtle.decrypt(
+      const decryptedValueBuffer = await crypto.subtle.decrypt(
         { name: "AES-GCM", iv: iv },
         key,
-        encryptedPassword
+        encryptedValue
       );
 
       // Convert the decrypted password ArrayBuffer to a string
-      const decryptedPasswordString = new TextDecoder().decode(
-        decryptedPasswordBuffer
+      const decryptedValueString = new TextDecoder().decode(
+        decryptedValueBuffer
       );
 
-      console.log("Decrypted Password String:", decryptedPasswordString);
-
-      return decryptedPasswordString;
+      return decryptedValueString;
     } catch (error) {
       console.error("Error during decryption:", error);
       throw error;

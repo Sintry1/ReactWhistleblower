@@ -1,6 +1,6 @@
+import bcrypt from "bcryptjs";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import bcrypt from "bcryptjs";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -10,7 +10,12 @@ export default function Login() {
   const host = "http://localhost:5090/";
 
   const checkPassword = async (name, password) => {
-    name = username;
+    
+    let encryptedUsername = await encryptValue(username, await deriveKey(industry));
+    console.log("Encrypted username: ", name);
+    name = btoa(
+      String.fromCharCode.apply(null, encryptedUsername.data)
+    );
 
     const storedPassword = await fetch(
       `${host}api/Regulator/passwordCheck/${name}`,
@@ -21,12 +26,16 @@ export default function Login() {
         },
       }
     );
-    return bcrypt.compareSync(password, storedPassword);
+    const data = await storedPassword.json();
+    console.log("Stored Password: ", data);
+    return bcrypt.compareSync(password, data.hashedPassword);
   };
+
 
   const checkUsernameMatch = (decryptedUsername, inputUsername) => {
     return decryptedUsername === inputUsername;
   };
+
 
   const checkUserExists = async (industry) => {
     const currentUser = await fetch(
@@ -42,10 +51,7 @@ export default function Login() {
       return console.log("sumting wong");
     }
     const currentUserData = await currentUser.json();
-    console.log(
-      "currentUsername inside checkUserExists: ",
-      currentUserData.userName
-    );
+    
     const encryptionKey = await deriveKey(industry);
 
     const decryptData = {
@@ -54,34 +60,15 @@ export default function Login() {
         c.charCodeAt(0)
       ),
     };
-    console.log("IV length:", decryptData.iv.length);
-    console.log("Username length:", decryptData.username.length);
-    const decryptedUsername = await decryptValue(
-      decryptData,
-      encryptionKey
-    );
-    console.log(
-      "Decrypted Username inside checkUserExists: ",
-      decryptedUsername
-    );
-
-    const response = await fetch(
-      `${host}api/Regulator/userExists/${industry}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (!response.ok) {
-      return false;
+    let decryptedUsername;
+    try {
+      decryptedUsername = await decryptValue(decryptData, encryptionKey);
+    } catch (error) {
+      console.error("Error during decryption:", error);
+      throw error; // or handle the error in some other way
     }
 
-    console.log("Response inside checkUserExists: ", await response.json());
-    const data = await response.json();
-    console.log("Data inside checkUserExists: ", data);
-    return data;
+    return checkUsernameMatch(decryptedUsername, username);
   };
 
   const handleUsernameChange = (e) => {
@@ -117,7 +104,16 @@ export default function Login() {
         break;
     }
 
-    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const salt = await fetch(
+      `${host}api/Regulator/GetRegulatorSalt/${industry}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const saltData = await salt.json();
 
     const encodedKey = new TextEncoder().encode(key);
 
@@ -132,7 +128,11 @@ export default function Login() {
     const derivedKey = await crypto.subtle.deriveKey(
       {
         name: "PBKDF2",
-        salt: salt,
+        salt: new Uint8Array(
+          atob(saltData.salt)
+            .split("")
+            .map((char) => char.charCodeAt(0))
+        ),
         iterations: 100000,
         hash: { name: "SHA-256" },
       },
@@ -145,49 +145,29 @@ export default function Login() {
     return derivedKey;
   };
 
-  const encryptValue = async (input, encryptionKey) => {
-    const keyMaterial = await crypto.subtle.exportKey("raw", encryptionKey);
-
-    const key = await crypto.subtle.deriveKey(
-      {
-        name: "PBKDF2",
-        salt: new TextEncoder().encode(localStorage.getItem("Salt")),
-        iterations: 100000,
-        hash: { name: "SHA-256" },
-      },
-      await crypto.subtle.importKey(
-        "raw",
-        keyMaterial,
-        { name: "PBKDF2" },
-        false,
-        ["deriveKey"]
-      ),
-      { name: "AES-GCM", length: 256 },
-      true,
-      ["encrypt", "decrypt"]
-    );
-
-    const iv = crypto.getRandomValues(new Uint8Array(16));
-    const cipher = await crypto.subtle.encrypt(
-      { name: "AES-GCM", iv: iv },
-      key,
-      new TextEncoder().encode(input)
-    );
-
-    return {
-      iv: iv,
-      input: new Uint8Array(cipher),
-    };
-  };
-
   const decryptValue = async (encryption, decryptionKey) => {
     try {
       const keyMaterial = await crypto.subtle.exportKey("raw", decryptionKey);
 
+      const salt = await fetch(
+        `${host}api/Regulator/GetRegulatorSalt/${industry}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const saltData = await salt.json();
+
       const key = await crypto.subtle.deriveKey(
         {
           name: "PBKDF2",
-          salt: new TextEncoder().encode(localStorage.getItem("Salt")),
+          salt: new Uint8Array(
+            atob(saltData.salt)
+              .split("")
+              .map((char) => char.charCodeAt(0))
+          ),
           iterations: 100000,
           hash: { name: "SHA-256" },
         },
@@ -204,53 +184,106 @@ export default function Login() {
       );
 
       const iv = new Uint8Array(encryption.iv);
-      const encryptedUsername = new Uint8Array(encryption.username);
+      const encryptedData = new Uint8Array(encryption.username);
 
-      const decryptedUsernameBuffer = await crypto.subtle.decrypt(
+      const decryptedDataBuffer = await crypto.subtle.decrypt(
         { name: "AES-GCM", iv: iv },
         key,
-        encryptedUsername
+        encryptedData
       );
 
       // Convert the decrypted password ArrayBuffer to a string
-      const decryptedUsernameString = new TextDecoder().decode(
-        decryptedUsernameBuffer
-      );
+      const decryptedDataString = new TextDecoder().decode(decryptedDataBuffer);
 
-      return decryptedUsernameString;
+      return decryptedDataString;
     } catch (error) {
       console.error("Error during decryption:", error);
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      throw error;
+    }
+  };
+
+  const encryptValue = async (input, encryptionKey) => {
+    try {
+      const keyMaterial = await crypto.subtle.exportKey("raw", encryptionKey);
+  
+      const salt = await fetch(
+        `${host}api/Regulator/GetRegulatorSalt/${industry}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const saltData = await salt.json();
+  
+      const ivResponse = await fetch(
+        `${host}api/Regulator/GetIvAndUserName/${industry}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const ivData = await ivResponse.json();
+      const iv = Uint8Array.from(atob(ivData.iv), (c) => c.charCodeAt(0));
+  
+      const key = await crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: new Uint8Array(
+            atob(saltData.salt)
+              .split("")
+              .map((char) => char.charCodeAt(0))
+          ),
+          iterations: 100000,
+          hash: { name: "SHA-256" },
+        },
+        await crypto.subtle.importKey(
+          "raw",
+          keyMaterial,
+          { name: "PBKDF2" },
+          false,
+          ["deriveKey"]
+        ),
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt", "decrypt"]
+      );
+  
+      const data = new TextEncoder().encode(input);
+  
+      const encryptedDataBuffer = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        data
+      );
+  
+      // Convert the encrypted data ArrayBuffer to a Uint8Array
+      const encryptedData = new Uint8Array(encryptedDataBuffer);
+  
+      return {
+        iv: Array.from(iv),
+        data: Array.from(encryptedData),
+      };
+    } catch (error) {
+      console.error("Error during encryption:", error);
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
       throw error;
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let encryptionKey = await deriveKey(industry);
-
-    let salt = await fetch(`${host}api/Regulator/GetRegulatorSalt/${industry}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-
-    // let encryptedUsernameString = btoa(
-    //   String.fromCharCode.apply(null, encryptedUsername.input)
-    // );
-
-    let data = await checkUserExists(industry);
-    console.log(data);
-
-    try {
+      try {
       // Check if user exists
-      // if (!checkUserExists(encryptedUsername)) {
-      //   throw new Error("User does not exist");
-      // }
-      // const userExistsResponse = await fetch(
-      //   `${host}api/Regulator/userExists/${username}`
-      // );
-      // if (!userExistsResponse.data.UserExists) {
-      //   throw new Error("User does not exist");
-      // }
+      if (!checkUserExists(industry)) {
+        throw new Error("User does not exist");
+      }
       // Check if industry matches
       // const industryMatchesResponse = await axios.get(
       //   `${host}api/Regulator/checkIndustry/${username}/${industry}`
@@ -260,10 +293,12 @@ export default function Login() {
       // }
       // Check if password matches
       // Assuming you have an endpoint for this
-      // const passwordMatchesResponse = await checkPassword(username, password);
-      // if (!passwordMatchesResponse) {
-      //   throw new Error("Password does not match");
-      // }
+      const passwordMatchesResponse = await checkPassword(username, password);
+      if (!passwordMatchesResponse) {
+        throw new Error("Password does not match");
+      }else {
+        console.log("Password matches")
+      }
       // Check is user exists
       // if user exists, check industry matches
       // if industry matches, check password

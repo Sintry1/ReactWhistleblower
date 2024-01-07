@@ -40,8 +40,10 @@ export default function Register() {
         break;
     }
 
-    const salt = crypto.getRandomValues(new Uint8Array(16));
-    localStorage.setItem("Salt", salt);
+    let salt = crypto.getRandomValues(new Uint8Array(16));
+    let saltString = btoa(String.fromCharCode.apply(null, salt));
+    localStorage.setItem("Salt", saltString);
+
 
     const encodedKey = new TextEncoder().encode(key);
 
@@ -75,7 +77,7 @@ export default function Register() {
     const key = await crypto.subtle.deriveKey(
       {
         name: "PBKDF2",
-        salt: new TextEncoder().encode(localStorage.getItem("Salt")),
+        salt: new Uint8Array(atob(localStorage.getItem("Salt")).split("").map(char => char.charCodeAt(0))),
         iterations: 100000,
         hash: { name: "SHA-256" },
       },
@@ -125,15 +127,12 @@ export default function Register() {
     const hashedPassword = hashPassword(password);
     let encryptionKey = await deriveKey(industry);
     let encryptedUsername = await encryptValue(email, encryptionKey);
-    console.log(`IV for: ${email}`, encryptedUsername.iv);
-    console.log(`Encrypted username for: ${email}`, encryptedUsername.input);
     let encryptedUsernameString = btoa(
       String.fromCharCode.apply(null, encryptedUsername.input)
     );
     let encryptedUsernameIv = btoa(
       String.fromCharCode.apply(null, encryptedUsername.iv)
     );
-    console.log("String representation of Username: ", encryptedUsernameString);
 
     let response;
     try {
@@ -144,6 +143,7 @@ export default function Register() {
           HashedPassword: hashedPassword,
           IndustryName: industry,
           Iv: encryptedUsernameIv,
+          Salt: localStorage.getItem("Salt"),
         }),
         headers: {
           "Content-Type": "application/json",
@@ -157,6 +157,7 @@ export default function Register() {
       console.error("Response error:", response.status);
       return;
     }
+    localStorage.removeItem("Salt");
     const data = await response.json();
     return data;
   };
