@@ -292,7 +292,6 @@ export default function Login() {
       //   throw new Error("Industry does not match");
       // }
       // Check if password matches
-      // Assuming you have an endpoint for this
       const passwordMatchesResponse = await checkPassword(username, password);
       if (!passwordMatchesResponse) {
         throw new Error("There was an error logging in, please try again");
