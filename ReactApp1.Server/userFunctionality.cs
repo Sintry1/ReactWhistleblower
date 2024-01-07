@@ -9,7 +9,7 @@ namespace ReactApp1
         private PreparedStatements ps = PreparedStatements.CreateInstance();
         private Security security = new Security();
 
-        public bool SendReport(string industryName, string companyName, string description, string email, string companyIv, string descriptionIv)
+        public bool SendReport(string industryName, string companyName, string companyIv, string description, string descriptionIv, string email)
         {
             try
             {
