@@ -160,33 +160,47 @@ namespace ReactApp1
         // Decrypts a key using AES algorithm and a specified decryption key
         public static byte[] DecryptKey(byte[] encryptedKey, byte[] decryptionKey)
         {
-            // Creates an instance of the AES algorithm
-            using (Aes aesAlg = Aes.Create())
-            {
-                // Sets the decryption key for the AES algorithm
-                aesAlg.Key = decryptionKey;
-
-                // Creates a memory stream to store the encrypted key
-                using (MemoryStream msDecrypt = new MemoryStream(encryptedKey))
+            try { 
+                Console.WriteLine($"encryptedKey: {encryptedKey}, decryptionKey: {decryptionKey}");
+                Console.WriteLine($"using Aes");
+                // Creates an instance of the AES algorithm
+                using (Aes aesAlg = Aes.Create())
                 {
-                    // Creates a decryptor using the AES algorithm
-                    using (ICryptoTransform decryptor = aesAlg.CreateDecryptor())
+                    Console.WriteLine($"setting aesAlf.key to decryptionKey");
+                    // Sets the decryption key for the AES algorithm
+                    aesAlg.Key = decryptionKey;
+                    Console.WriteLine($"aesAlg key value: {aesAlg.Key}");
+                    Console.WriteLine($"memoryStream");
+                    // Creates a memory stream to store the encrypted key
+                    using (MemoryStream msDecrypt = new MemoryStream(encryptedKey))
                     {
-                        // Creates a CryptoStream to perform the decryption
-                        using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                        Console.WriteLine($"setting up decryptor using AES");
+                        // Creates a decryptor using the AES algorithm
+                        using (ICryptoTransform decryptor = aesAlg.CreateDecryptor())
                         {
-                            // Creates a StreamReader to read the decrypted key from the stream
-                            using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                            Console.WriteLine($"creating cryptostream");
+                            // Creates a CryptoStream to perform the decryption
+                            using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                             {
-                                // Reads the decrypted key from the stream
-                                string decryptedKey = srDecrypt.ReadToEnd();
+                                Console.WriteLine($"streamreader");
+                                // Creates a StreamReader to read the decrypted key from the stream
+                                using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                                {
+                                    Console.WriteLine($"descrypting");
+                                    // Reads the decrypted key from the stream
+                                    string decryptedKey = srDecrypt.ReadToEnd();
+                                    Console.WriteLine($"decrypted key: {decryptedKey}");
 
-                                // Converts the decrypted key to a byte array and returns it
-                                return Encoding.UTF8.GetBytes(decryptedKey);
+                                    // Converts the decrypted key to a byte array and returns it
+                                    return Encoding.UTF8.GetBytes(decryptedKey);
+                                }
                             }
                         }
                     }
                 }
+            }
+            catch(Exception ex) { Console.WriteLine(ex.ToString());
+                throw ex;
             }
         }
 

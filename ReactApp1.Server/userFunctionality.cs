@@ -144,6 +144,7 @@ namespace ReactApp1
             {
                 // Handle the exception (e.g., log it) and return an empty list or null
                 // You may want to implement secure logging to store the error message
+                Console.WriteLine(ex);
                 throw ex;
             }
         }
