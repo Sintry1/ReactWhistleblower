@@ -72,13 +72,15 @@ export default function Login() {
 
 
   const checkUserAndIndustryMatch = async (name, industry) => {
-    let encryptedUsername = await encryptValue(username, await deriveKey(industry));
+    let encryptedUsername = await encryptValue(name, await deriveKey(industry));
     name = btoa(
       String.fromCharCode.apply(null, encryptedUsername.data)
     );
 
     console.log("name", name);
+    console.log("name type", typeof name);
     console.log("industry", industry);
+    console.log("industry type", typeof industry);
 
     const response = await fetch(
       `${host}api/Regulator/checkIndustry/${name}/${industry}`,
