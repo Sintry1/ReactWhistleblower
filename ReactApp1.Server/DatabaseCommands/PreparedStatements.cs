@@ -493,6 +493,7 @@ namespace ReactApp1
                 //Calls another prepared statement to get the industry ID from the industry name
                 int industryId = GetIndustryID(industryName);
 
+                Console.WriteLine($"industry name is: {industryName}");
                 // Set credentials for the user needed
                 dbConnection.SetConnectionCredentials(
                     Env.GetString("OTHER_READER_NAME"),
