@@ -56,13 +56,13 @@ namespace ReactApp1
             }
         }
 
-        [HttpGet("passwordCheck/{userName}")]
-        public IActionResult UserPassword(string userName)
+        [HttpGet("passwordCheck")]
+        public IActionResult UserPassword()
         {
-            string decodedUserName = System.Net.WebUtility.UrlDecode(userName);
             try
             {
-                string hashedPassword = security.UserPassword(decodedUserName);
+                string userName = Request.Headers["name-Header"].ToString();
+                string hashedPassword = security.UserPassword(userName);
 
                 return Ok(new { Success = true, HashedPassword = hashedPassword });
             }
@@ -73,13 +73,14 @@ namespace ReactApp1
             }
         }
 
-        [HttpGet("checkIndustry/{userName}/{industryName}")]
-        public IActionResult IndustryMatch(string userName, string industryName)
+        [HttpGet("checkIndustry/{industryName}")]
+        public IActionResult IndustryMatch( string industryName)
         {
-            string decodedUserName = System.Net.WebUtility.UrlDecode(userName);
+            
             try
             {
-                bool exists = security.IndustryMatch(decodedUserName, industryName);
+                string userName = Request.Headers["name-Header"].ToString();
+                bool exists = security.IndustryMatch(userName, industryName);
 
                 return Ok(new { Success = true, IndustryMatch = exists });
             }

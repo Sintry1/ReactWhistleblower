@@ -29,10 +29,11 @@ export default function Reports() {
     const user = sessionStorage.getItem("User");
     try {
       const response = await fetch(
-        `${host}api/Report/getReports/${industry}/${user}`,
+        `${host}api/Report/getReports/${industry}`,
         {
           method: "GET",
           headers: {
+            "name-Header": user,
             "Content-Type": "application/json",
           },
         }

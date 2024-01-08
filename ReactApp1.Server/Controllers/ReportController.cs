@@ -49,13 +49,14 @@ namespace ReactApp1
             }
         }
 
-        [HttpGet("getReports/{industryName}/{userName}")]
-        public IActionResult RetrieveReports(string industryName, string userName)
+        [HttpGet("getReports/{industryName}")]
+        public IActionResult RetrieveReports(string industryName)
         {
-            string decodedUserName = System.Net.WebUtility.UrlDecode(userName);
+            
             try
             {
-                List<Report> reports = userFunctionality.RetrieveReports(industryName, decodedUserName);
+                string userName = Request.Headers["name-Header"].ToString();
+                List<Report> reports = userFunctionality.RetrieveReports(industryName, userName);
 
                 return Ok(new { Success = true, Reports = reports });
             }

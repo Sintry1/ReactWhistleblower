@@ -61,10 +61,11 @@ export default function Login() {
     name = btoa(String.fromCharCode.apply(null, encryptedUsername.data));
 
     const storedPassword = await fetch(
-      `${host}api/Regulator/passwordCheck/${name}`,
+      `${host}api/Regulator/passwordCheck/`,
       {
         method: "GET",
         headers: {
+          "name-Header": name,
           "Content-Type": "application/json",
         },
       }
@@ -78,10 +79,11 @@ export default function Login() {
     name = btoa(String.fromCharCode.apply(null, encryptedUsername.data));
 
     const response = await fetch(
-      `${host}api/Regulator/checkIndustry/${name}/${industry}`,
+      `${host}api/Regulator/checkIndustry/${industry}`,
       {
         method: "GET",
         headers: {
+          "name-Header": name,
           "Content-Type": "application/json",
         },
       }
