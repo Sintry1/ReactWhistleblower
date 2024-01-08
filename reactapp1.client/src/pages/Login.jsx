@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
@@ -30,7 +30,9 @@ export default function Login() {
       }
     );
     if (!currentUser.ok) {
-      return console.log("Something is wrong with the request, please try again.");
+      return console.log(
+        "Something is wrong with the request, please try again."
+      );
     }
     const currentUserData = await currentUser.json();
 
@@ -54,22 +56,21 @@ export default function Login() {
   };
 
   const checkPassword = async (name, password) => {
+    console.log(name);
     let encryptedUsername = await encryptValue(
       username,
       await deriveKey(industry)
     );
     name = btoa(String.fromCharCode.apply(null, encryptedUsername.data));
-
-    const storedPassword = await fetch(
-      `${host}api/Regulator/passwordCheck/`,
-      {
-        method: "GET",
-        headers: {
-          "name-Header": name,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    console.log(name);
+    const storedPassword = await fetch(`${host}api/Regulator/passwordCheck/`, {
+      method: "GET",
+      headers: {
+        "name-Header": name,
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("stored password object", storedPassword);
     const data = await storedPassword.json();
     return bcrypt.compareSync(password, data.hashedPassword);
   };
