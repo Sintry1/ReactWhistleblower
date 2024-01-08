@@ -52,9 +52,10 @@ namespace ReactApp1
         [HttpGet("getReports/{industryName}/{userName}")]
         public IActionResult RetrieveReports(string industryName, string userName)
         {
+            string decodedUserName = System.Net.WebUtility.UrlDecode(userName);
             try
             {
-                List<Report> reports = userFunctionality.RetrieveReports(industryName, userName);
+                List<Report> reports = userFunctionality.RetrieveReports(industryName, decodedUserName);
 
                 return Ok(new { Success = true, Reports = reports });
             }

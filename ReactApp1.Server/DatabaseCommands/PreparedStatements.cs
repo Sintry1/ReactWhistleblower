@@ -90,8 +90,8 @@ namespace ReactApp1
         public void StoreRegulatorInformation(
             string userName,
             string hash,
-            byte[] publicKey,
-            byte[] encryptedPrivateKey,
+            string publicKey,
+            string encryptedPrivateKey,
             string industryName,
             string iv,
             string salt
@@ -105,7 +105,7 @@ namespace ReactApp1
                 Env.GetString("REGULATOR_WRITER_NAME"),
                 Env.GetString("REGULATOR_WRITER_PASSWORD")
             );
-
+            Console.WriteLine($"encrypted key stored: {encryptedPrivateKey}");
             //uses mySqlConnection to open the connection and throws an exception if it fails
             using (MySqlConnection connection = dbConnection.OpenConnection())
             {
@@ -152,15 +152,15 @@ namespace ReactApp1
             }
         }
 
-        public byte[] GetPrivateKey(string industryName)
+        public string GetPrivateKey(string industryName)
         {
             //Calls another prepared statement to get the industry ID from the industry name
             int industryId = GetIndustryID(industryName);
 
             //Set credentials for the user needed
             dbConnection.SetConnectionCredentials(
-                Env.GetString("REGULATOR_WRITER_NAME"),
-                Env.GetString("REGULATOR_WRITER_PASSWORD")
+                Env.GetString("OTHER_READER_NAME"),
+                Env.GetString("OTHER_READER_PASSWORD")
             );
 
             //uses mySqlConnection to open the connection and throws an exception if it fails
@@ -178,7 +178,11 @@ namespace ReactApp1
                     privateKeyCommand.Prepare();
 
                     // Execute the query to get private_key
-                    byte[] privateKey = (byte[])privateKeyCommand.ExecuteScalar();
+                    string privateKey = (string)privateKeyCommand.ExecuteScalar();
+
+                    Console.WriteLine($"Encrypted Privatekey taken from database: {(privateKey)}");
+
+                    Console.WriteLine($"Encrypted Privatekey taken from database: {(privateKey)}");
 
                     return privateKey;
                 }
@@ -458,6 +462,7 @@ namespace ReactApp1
                             string email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email");
 
                             Report report = new Report(
+                                reportID,
                                 industryName,
                                 companyName,
                                 companyIv,
@@ -486,7 +491,7 @@ namespace ReactApp1
             }
         }
 
-        public byte[] GetPublicKey(string industryName)
+        public string GetPublicKey(string industryName)
         {
             try
             {
@@ -527,7 +532,7 @@ namespace ReactApp1
                         command.Prepare();
 
                         // Execute the query and cast the result to a byte array
-                        byte[] result = command.ExecuteScalar() as byte[];
+                        string result = command.ExecuteScalar() as string;
                         Console.WriteLine("Query executed successfully.");
 
                         // Return the byte array
