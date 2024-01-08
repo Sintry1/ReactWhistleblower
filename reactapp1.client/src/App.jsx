@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { Route, Routes, Link } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import "./App.css";
 import Information from "./pages/Information";
 import LandingPage from "./pages/LandingPage";
@@ -8,15 +8,9 @@ import Register from "./pages/Register";
 import Reports from "./pages/Reports";
 import SendReport from "./pages/SendReport";
 
-function PrivateRoute({element, isAuthenticated, ...rest}) {
-  return (
-    <Route
-      {...rest}
-      element={
-        isAuthenticated ? element : <Link to="/login" />
-      }
-    />
-  );
+function PrivateRoute({ children }) {
+  const isAuth = localStorage.getItem("User") && localStorage.getItem("Industry"); // check if User and Industry exist in localStorage
+  return isAuth ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {
@@ -27,7 +21,7 @@ export default function App() {
       <Route path="/information" element={<Information />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/reports" element={<Reports />} />
+      <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
       <Route path="/sendreport" element={<SendReport />} />
     </Routes>
   );

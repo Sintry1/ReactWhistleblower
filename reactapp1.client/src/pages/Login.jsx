@@ -1,11 +1,13 @@
 import bcrypt from "bcryptjs";
 import { useState,useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [industry, setIndustry] = useState("");
+
+  const navigate = useNavigate();
 
   const host = "http://localhost:5090/";
 
@@ -324,6 +326,7 @@ export default function Login() {
       localStorage.setItem("User", user);
       localStorage.setItem("Industry", industry);
 
+      navigate("/reports");
       // if password matches, login by redirecting to reports page
       // when redirected to reports page, pass industry and username as props (if secure)
       // Perform login logic here with encrypted values
@@ -363,7 +366,7 @@ export default function Login() {
           <option value="Leisure">Leisure</option>
           <option value="Hospitality">Hospitality</option>
         </select>
-        <button type="submit"><Link to="/reports">Login</Link></button>
+        <button type="submit">Login</button>
       </form>
       <button>
         <Link to="/register">Register</Link>
