@@ -192,7 +192,8 @@ namespace ReactApp1
         // Generates a key pair for the regulator and returns them as byte arrays
         public static Tuple<RSAParameters, RSAParameters> GenerateKeyPair()
         {
-            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+            int keySize = 8192;
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(keySize))
             {
                 // Generate public-private key pair
                 RSAParameters publicKey = rsa.ExportParameters(false);
@@ -248,6 +249,8 @@ namespace ReactApp1
         // Encrypts the msg using the publicKey of the regulator with RSA
         public string Encrypt(string msg, RSAParameters publicKey)
         {
+            try {
+                int keysize = 2048;
             Console.WriteLine($"message to encrypt: {msg}");
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {
@@ -263,6 +266,7 @@ namespace ReactApp1
 
                 return Convert.ToBase64String(encryptedData);
             }
+            }catch (Exception ex) { Console.WriteLine(ex.ToString()); throw; }
         }
 
         // Decrypts the encrypted message using the private key with RSA
