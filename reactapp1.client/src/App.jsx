@@ -9,7 +9,7 @@ import Reports from "./pages/Reports";
 import SendReport from "./pages/SendReport";
 
 function PrivateRoute({ children }) {
-  const isAuth = localStorage.getItem("User") && localStorage.getItem("Industry"); // check if User and Industry exist in localStorage
+  const isAuth = sessionStorage.getItem("User") && sessionStorage.getItem("Industry"); // check if User and Industry exist in sessionStorage
   return isAuth ? children : <Navigate to="/login" replace />;
 }
 

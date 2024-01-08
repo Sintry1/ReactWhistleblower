@@ -123,7 +123,6 @@ export default function Register() {
   };
 
   const registerRegulator = async (email, password, industry) => {
-    console.log(`IV for: ${email}`, );
     const hashedPassword = hashPassword(password);
     let encryptionKey = await deriveKey(industry);
     let encryptedUsername = await encryptValue(email, encryptionKey);

@@ -1,39 +1,48 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import "./Reports.css";
 
 export default function Reports() {
-  const [reports, setReports] = useState([]);
+  const [decryptedReports, setDecryptedReports] = useState([]);
+
+  useEffect(() => {
+    // Add event listener for beforeunload
+    window.addEventListener("beforeunload", () => {
+      // Clears sessionStorage on any sort of navigation away from the page, so that the user has to log in again whenever they navigate away.
+      sessionStorage.clear();
+    });
+
+    // Fetch reports from the database
+    fetchReports();
+
+    // Cleanup
+    return () => {
+      // Remove event listener when the component unmounts
+      window.removeEventListener("beforeunload", () => {
+      });
+    };
+  }, []);
 
   const host = "http://localhost:5090/";
 
-////// FIGURE OUT HOW TO PASS THE INDUSTRY TO THE REPORTS PAGE AFTER LOGIN
-
-const fetchReports = async () => {
-  let industry = localStorage.getItem("Industry");
-  let user = localStorage.getItem("User");
-  try {
-    const response = await fetch(
-      `${host}api/Report/getReports/${industry}/${user}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    console.log(response.data);
-  } catch (error) {
-    console.error("Error fetching reports:", error);
-  }
-};
-
-  useEffect(() => {
-    // Fetch reports from the database
-    
-
-    fetchReports();
-  }, []);
+  const fetchReports = async () => {
+    const industry = sessionStorage.getItem("Industry");
+    const user = sessionStorage.getItem("User");
+    try {
+      const response = await fetch(
+        `${host}api/Report/getReports/${industry}/${user}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      decryptReports(data.reports);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+    }
+  };
 
   const deriveKey = async (industry) => {
     let key;
@@ -60,12 +69,15 @@ const fetchReports = async () => {
         break;
     }
 
-    const salt = await fetch(`${host}api/Regulator/GetRegulatorSalt/${industry}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const salt = await fetch(
+      `${host}api/Regulator/GetRegulatorSalt/${industry}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const saltData = await salt.json();
 
     const encodedKey = new TextEncoder().encode(key);
@@ -81,7 +93,11 @@ const fetchReports = async () => {
     const derivedKey = await crypto.subtle.deriveKey(
       {
         name: "PBKDF2",
-        salt: salt,
+        salt: new Uint8Array(
+          atob(saltData.salt)
+            .split("")
+            .map((char) => char.charCodeAt(0))
+        ),
         iterations: 100000,
         hash: { name: "SHA-256" },
       },
@@ -94,22 +110,29 @@ const fetchReports = async () => {
     return derivedKey;
   };
 
-  const decryptValue = async (encryption, decryptionKey) => {
+  const decryptValue = async (encryption, industry) => {
+    const decryptionKey = await deriveKey(industry);
     try {
       const keyMaterial = await crypto.subtle.exportKey("raw", decryptionKey);
-
-      const salt = await fetch(`${host}api/Regulator/GetRegulatorSalt/${industry}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const salt = await fetch(
+        `${host}api/Regulator/GetRegulatorSalt/${industry}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const saltData = await salt.json();
 
       const key = await crypto.subtle.deriveKey(
         {
           name: "PBKDF2",
-          salt: ""/* await fetch(`${host}api/Regulator/GetSalt/${industry}`, {});*/,
+          salt: new Uint8Array(
+            atob(saltData.salt)
+              .split("")
+              .map((char) => char.charCodeAt(0))
+          ),
           iterations: 100000,
           hash: { name: "SHA-256" },
         },
@@ -126,24 +149,58 @@ const fetchReports = async () => {
       );
 
       const iv = new Uint8Array(encryption.iv);
-      const encryptedValue = new Uint8Array(encryption.value);
+      const encryptedData = new Uint8Array(encryption.input);
 
-      const decryptedValueBuffer = await crypto.subtle.decrypt(
+      const decryptedDataBuffer = await crypto.subtle.decrypt(
         { name: "AES-GCM", iv: iv },
         key,
-        encryptedValue
+        encryptedData
       );
 
       // Convert the decrypted password ArrayBuffer to a string
-      const decryptedValueString = new TextDecoder().decode(
-        decryptedValueBuffer
-      );
+      const decryptedDataString = new TextDecoder().decode(decryptedDataBuffer);
 
-      return decryptedValueString;
+      return decryptedDataString;
     } catch (error) {
       console.error("Error during decryption:", error);
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
       throw error;
     }
+  };
+
+  const decryptReports = async (reports) => {
+    const decryptedReports = [];
+    for (const report of reports) {
+      const companyDecrypt = {
+        iv: Uint8Array.from(atob(report.companyIv), (c) => c.charCodeAt(0)),
+        input: Uint8Array.from(atob(report.companyName), (c) =>
+          c.charCodeAt(0)
+        ),
+      };
+      const decryptedCompanyName = await decryptValue(
+        companyDecrypt,
+        report.industryName
+      );
+      const descriptionDecrypt = {
+        iv: Uint8Array.from(atob(report.descriptionIv), (c) => c.charCodeAt(0)),
+        input: Uint8Array.from(atob(report.description), (c) =>
+          c.charCodeAt(0)
+        ),
+      };
+      const decryptedDescription = await decryptValue(
+        descriptionDecrypt,
+        report.industryName
+      );
+      const decryptedReport = {
+        id: report.reportID,
+        industryName: report.industryName,
+        companyName: decryptedCompanyName,
+        description: decryptedDescription,
+      };
+      decryptedReports.push(decryptedReport);
+    }
+    setDecryptedReports(decryptedReports);
   };
 
   return (
@@ -157,11 +214,11 @@ const fetchReports = async () => {
           </tr>
         </thead>
         <tbody>
-          {reports.map((report) => (
+          {decryptedReports.map((report) => (
             <tr key={report.id}>
-              <td>{report.industry}</td>
-              <td>{report.employer}</td>
-              <td>{report.description}</td>
+              <td className="column">{report.industryName}</td>
+              <td className="column">{report.companyName}</td>
+              <td className="column">{report.description}</td>
             </tr>
           ))}
         </tbody>

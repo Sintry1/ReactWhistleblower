@@ -12,7 +12,7 @@ export default function Login() {
   const host = "http://localhost:5090/";
 
   useEffect(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   }, []);
 
   const checkUsernameMatch = (decryptedUsername, inputUsername) => {
@@ -30,7 +30,7 @@ export default function Login() {
       }
     );
     if (!currentUser.ok) {
-      return console.log("Something is wrong with the request");
+      return console.log("Something is wrong with the request, please try again.");
     }
     const currentUserData = await currentUser.json();
 
@@ -87,7 +87,6 @@ export default function Login() {
       }
     );
     const data = await response.json();
-    console.log("Data inside checkUserAndIndustryMatch", data);
     if (!data.industryMatch) {
       return false;
     } else {
@@ -323,13 +322,12 @@ export default function Login() {
       let user = await encryptValue(username, encryptionKey);
       user = btoa(String.fromCharCode.apply(null, user.data));
 
-      localStorage.setItem("User", user);
-      localStorage.setItem("Industry", industry);
+      sessionStorage.setItem("User", user);
+      sessionStorage.setItem("Industry", industry);
 
       navigate("/reports");
       // if password matches, login by redirecting to reports page
-      // when redirected to reports page, pass industry and username as props (if secure)
-      // Perform login logic here with encrypted values
+      // when redirected to reports page, pass industry and username in sessionStorage
     } catch (err) {
       console.log(err);
     }

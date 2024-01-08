@@ -156,9 +156,6 @@ export default function SendReport() {
       String.fromCharCode.apply(null, ecnryptedCompany.iv)
     );
 
-    console.log("Encrypted Report IV: ",encryptedReportIv);
-    console.log("Encrypted Company IV: ",encryptedCompanyIv);
-
     if (industry === ""){
       alert("Please select an industry");
       return;
@@ -187,9 +184,7 @@ export default function SendReport() {
         Email: email,
       }),
     })
-      .then((res) => res.json())
-      .then((data) => console.log(data))
-      .catch((err) => console.log("dlkfngjo", err));
+      .then((res) => res.json());
   };
 
   return (

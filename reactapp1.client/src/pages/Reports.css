@@ -12,3 +12,7 @@ table {
   width: 500px; /* Width of column three */
   background-color: gray;
 }
+
+.column {
+  background-color: gray;
+}
