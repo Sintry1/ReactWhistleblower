@@ -18,7 +18,13 @@ namespace ReactApp1
          * encrypts the private key with the derived key
          * Sends all of it to StoreRegulatorInformation, which then saves it in the database.
          */
-        public void CreateRegulator(string userName, string hashedPassword, string industryName, string iv, string salt)
+        public void CreateRegulator(
+            string userName,
+            string hashedPassword,
+            string industryName,
+            string iv,
+            string salt
+        )
         {
             // Calls HashPassword with the password and sets the hashed password to the value returned
             // this hashedpassword is saved with other regulator information
@@ -36,26 +42,46 @@ namespace ReactApp1
             string serializedPublicKey = SerializeRSAParameters(publicKey);
             //Console.WriteLine($"key serialized {BitConverter.ToString(serializedPublicKey)}");
             Console.WriteLine($"private key modulus: {BitConverter.ToString(privateKey.Modulus)}");
-            Console.WriteLine($"private key Exponent: {BitConverter.ToString(privateKey.Exponent)}");
+            Console.WriteLine(
+                $"private key Exponent: {BitConverter.ToString(privateKey.Exponent)}"
+            );
             Console.WriteLine($"private key DP: {BitConverter.ToString(privateKey.DP)}");
             Console.WriteLine($"private key DQ: {BitConverter.ToString(privateKey.DQ)}");
             Console.WriteLine($"private key Q: {BitConverter.ToString(privateKey.Q)}");
             Console.WriteLine($"private key D: {BitConverter.ToString(privateKey.D)}");
-            Console.WriteLine($"private key InverseQ: {BitConverter.ToString(privateKey.InverseQ)}");
+            Console.WriteLine(
+                $"private key InverseQ: {BitConverter.ToString(privateKey.InverseQ)}"
+            );
             Console.WriteLine($"private key P: {BitConverter.ToString(privateKey.P)}");
-
 
             string serializedPrivateKey = SerializeRSAParameters(privateKey);
             Console.WriteLine($"private key serialized: {(serializedPrivateKey)}");
 
             // gets a byte array as encryption key, using the called function
-            string encryptionkey = KeyDeriverForEncryptionAndDecryptionOfPrivateKey(userName, hashedPassword);
+            string encryptionkey = KeyDeriverForEncryptionAndDecryptionOfPrivateKey(
+                userName,
+                hashedPassword
+            );
 
-            string encryptedSerializedPrivateKey = EncryptKey(serializedPrivateKey, encryptionkey,iv);
-            Console.WriteLine($"private key serialized and encrypted: {encryptedSerializedPrivateKey}");
+            string encryptedSerializedPrivateKey = EncryptKey(
+                serializedPrivateKey,
+                encryptionkey,
+                iv
+            );
+            Console.WriteLine(
+                $"private key serialized and encrypted: {encryptedSerializedPrivateKey}"
+            );
 
             // stores username and password in DB, this can be removed if we are using other services for login
-            ps.StoreRegulatorInformation(userName, hashedPassword, serializedPublicKey, encryptedSerializedPrivateKey, industryName, iv, salt);
+            ps.StoreRegulatorInformation(
+                userName,
+                hashedPassword,
+                serializedPublicKey,
+                encryptedSerializedPrivateKey,
+                industryName,
+                iv,
+                salt
+            );
         }
 
         /*
@@ -94,8 +120,6 @@ namespace ReactApp1
             return false;
         }
 
-
-
         // Function for calling the preparedStatement and returning the hashedPassword
         public string UserPassword(string userName)
         {
@@ -122,7 +146,10 @@ namespace ReactApp1
 
 
         // Function for deriving a key from username and password
-        public string KeyDeriverForEncryptionAndDecryptionOfPrivateKey(string userName, string password)
+        public string KeyDeriverForEncryptionAndDecryptionOfPrivateKey(
+            string userName,
+            string password
+        )
         {
             // Sets a combinedSecret of password and username
             string combinedSecret = password + userName;
@@ -131,7 +158,14 @@ namespace ReactApp1
             byte[] deterministicSalt = Encoding.UTF8.GetBytes(userName);
 
             // Derive a consistent user-specific key from combinedSecret using Rfc2898DeriveBytes
-            using (var pbkdf2 = new Rfc2898DeriveBytes(combinedSecret, deterministicSalt, 600000, HashAlgorithmName.SHA256))
+            using (
+                var pbkdf2 = new Rfc2898DeriveBytes(
+                    combinedSecret,
+                    deterministicSalt,
+                    600000,
+                    HashAlgorithmName.SHA256
+                )
+            )
             {
                 return Convert.ToBase64String(pbkdf2.GetBytes(32)); // 256 bits key
             }
@@ -148,9 +182,17 @@ namespace ReactApp1
 
                 using (MemoryStream msEncrypt = new MemoryStream())
                 {
-                    using (ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV))
+                    using (
+                        ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV)
+                    )
                     {
-                        using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                        using (
+                            CryptoStream csEncrypt = new CryptoStream(
+                                msEncrypt,
+                                encryptor,
+                                CryptoStreamMode.Write
+                            )
+                        )
                         {
                             using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
                             {
@@ -173,11 +215,23 @@ namespace ReactApp1
                 aesAlg.IV = Convert.FromBase64String(iv);
                 aesAlg.Mode = CipherMode.CFB;
 
-                using (MemoryStream msDecrypt = new MemoryStream(Convert.FromBase64String(encryptedKey)))
+                using (
+                    MemoryStream msDecrypt = new MemoryStream(
+                        Convert.FromBase64String(encryptedKey)
+                    )
+                )
                 {
-                    using (ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV))
+                    using (
+                        ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV)
+                    )
                     {
-                        using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                        using (
+                            CryptoStream csDecrypt = new CryptoStream(
+                                msDecrypt,
+                                decryptor,
+                                CryptoStreamMode.Read
+                            )
+                        )
                         {
                             using (StreamReader srDecrypt = new StreamReader(csDecrypt))
                             {
@@ -228,7 +282,9 @@ namespace ReactApp1
         public static RSAParameters DeserializeRSAParameters(string serializedParameters)
         {
             // Deserialize the JSON string to the custom object
-            var deserializedParameters = JsonConvert.DeserializeObject<SerializedRSAParameters>(serializedParameters);
+            var deserializedParameters = JsonConvert.DeserializeObject<SerializedRSAParameters>(
+                serializedParameters
+            );
 
             // Convert the custom object back to RSAParameters
             RSAParameters rsaParameters = new RSAParameters
@@ -249,24 +305,29 @@ namespace ReactApp1
         // Encrypts the msg using the publicKey of the regulator with RSA
         public string Encrypt(string msg, RSAParameters publicKey)
         {
-            try {
-                int keysize = 2048;
-            Console.WriteLine($"message to encrypt: {msg}");
-            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+            try
             {
-                Console.WriteLine($"Importing publickey parameters");
-                rsa.ImportParameters(publicKey);
+                Console.WriteLine($"message to encrypt: {msg}");
+                using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+                {
+                    Console.WriteLine($"Importing publickey parameters");
+                    rsa.ImportParameters(publicKey);
 
-                Console.WriteLine($"Converts string to byte");
-                byte[] plaintextBytes = Encoding.UTF8.GetBytes(msg);
-                Console.WriteLine($"message to encrypt: {plaintextBytes}");
+                    Console.WriteLine($"Converts string to byte");
+                    byte[] plaintextBytes = Encoding.UTF8.GetBytes(msg);
+                    Console.WriteLine($"message to encrypt: {plaintextBytes}");
 
-                Console.WriteLine($"encrypting using RSA");
-                byte[] encryptedData = rsa.Encrypt(plaintextBytes, true);
+                    Console.WriteLine($"encrypting using RSA");
+                    byte[] encryptedData = rsa.Encrypt(plaintextBytes, true);
 
-                return Convert.ToBase64String(encryptedData);
+                    return Convert.ToBase64String(encryptedData);
+                }
             }
-            }catch (Exception ex) { Console.WriteLine(ex.ToString()); throw; }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
         }
 
         // Decrypts the encrypted message using the private key with RSA
@@ -276,24 +337,31 @@ namespace ReactApp1
             {
                 using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
                 {
-
-                    Console.WriteLine($"Original Private Key Modulus: {BitConverter.ToString(privateKey.Modulus)}");
-                    Console.WriteLine($"Original Private Key Exponent: {BitConverter.ToString(privateKey.Exponent)}");
+                    Console.WriteLine(
+                        $"Original Private Key Modulus: {BitConverter.ToString(privateKey.Modulus)}"
+                    );
+                    Console.WriteLine(
+                        $"Original Private Key Exponent: {BitConverter.ToString(privateKey.Exponent)}"
+                    );
 
                     rsa.ImportParameters(privateKey);
 
-                    Console.WriteLine($"Imported Private Key Modulus: {BitConverter.ToString(rsa.ExportParameters(true).Modulus)}");
-                    Console.WriteLine($"Imported Private Key Exponent: {BitConverter.ToString(rsa.ExportParameters(true).Exponent)}");
+                    Console.WriteLine(
+                        $"Imported Private Key Modulus: {BitConverter.ToString(rsa.ExportParameters(true).Modulus)}"
+                    );
+                    Console.WriteLine(
+                        $"Imported Private Key Exponent: {BitConverter.ToString(rsa.ExportParameters(true).Exponent)}"
+                    );
 
                     byte[] encryptedData = Convert.FromBase64String(encryptedText);
                     Console.WriteLine($"Encrypted Data: {BitConverter.ToString(encryptedData)}");
 
-
                     byte[] decryptedBytes = rsa.Decrypt(encryptedData, true);
                     Console.WriteLine($"Decrypted Data: {BitConverter.ToString(decryptedBytes)}");
 
-                    Console.WriteLine($"Decrypted Data from decrypt in security: {BitConverter.ToString(decryptedBytes)}");
-
+                    Console.WriteLine(
+                        $"Decrypted Data from decrypt in security: {BitConverter.ToString(decryptedBytes)}"
+                    );
 
                     return Encoding.UTF8.GetString(decryptedBytes);
                 }
@@ -316,8 +384,8 @@ namespace ReactApp1
             try
             {
                 return ps.FindRegulatorIvFromIndustryName(industryName);
-
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 throw e;
             }
@@ -329,7 +397,6 @@ namespace ReactApp1
             try
             {
                 return ps.FindRegulatorSalt(industryName);
-
             }
             catch (Exception e)
             {

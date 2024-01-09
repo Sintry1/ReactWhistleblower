@@ -17,8 +17,7 @@ export default function Reports() {
     // Cleanup
     return () => {
       // Remove event listener when the component unmounts
-      window.removeEventListener("beforeunload", () => {
-      });
+      window.removeEventListener("beforeunload", () => {});
     };
   }, []);
 
@@ -28,16 +27,13 @@ export default function Reports() {
     const industry = sessionStorage.getItem("Industry");
     const user = sessionStorage.getItem("User");
     try {
-      const response = await fetch(
-        `${host}api/Report/getReports/${industry}`,
-        {
-          method: "GET",
-          headers: {
-            "name-Header": user,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${host}api/Report/getReports/${industry}`, {
+        method: "GET",
+        headers: {
+          "name-Header": user,
+          "Content-Type": "application/json",
+        },
+      });
       const data = await response.json();
       decryptReports(data.reports);
     } catch (error) {
