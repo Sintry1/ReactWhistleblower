@@ -250,7 +250,6 @@ namespace ReactApp1
         public string Encrypt(string msg, RSAParameters publicKey)
         {
             try {
-                int keysize = 2048;
             Console.WriteLine($"message to encrypt: {msg}");
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {
