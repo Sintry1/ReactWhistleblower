@@ -305,13 +305,12 @@ namespace ReactApp1
         // Encrypts the msg using the publicKey of the regulator with RSA
         public string Encrypt(string msg, RSAParameters publicKey)
         {
-            try
+            try {
+            Console.WriteLine($"message to encrypt: {msg}");
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {
-                Console.WriteLine($"message to encrypt: {msg}");
-                using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
-                {
-                    Console.WriteLine($"Importing publickey parameters");
-                    rsa.ImportParameters(publicKey);
+                Console.WriteLine($"Importing publickey parameters");
+                rsa.ImportParameters(publicKey);
 
                     Console.WriteLine($"Converts string to byte");
                     byte[] plaintextBytes = Encoding.UTF8.GetBytes(msg);
